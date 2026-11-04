@@ -21,7 +21,7 @@ export default function StudentsAdmin() {
 
   const exportCsv = () => {
     const lines = [['Name', 'Mobile', 'Email', 'Joined'], ...rows.map((r) => [r.full_name || '', r.phone, r.email || '', fmtDate(r.created_at)])];
-    downloadText(`studyveda-students-${new Date().toISOString().slice(0, 10)}.csv`, '\ufeff' + lines.map((l) => l.map(csvCell).join(',')).join('\n'));
+    downloadText(`entrancego-students-${new Date().toISOString().slice(0, 10)}.csv`, '\ufeff' + lines.map((l) => l.map(csvCell).join(',')).join('\n'));
   };
 
   return (
