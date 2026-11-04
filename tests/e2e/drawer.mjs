@@ -8,7 +8,7 @@ const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 360, height: 780 } });
 await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
 const p = await ctx.newPage();
-const B = 'http://localhost:4173/studyveda';
+const B = 'http://localhost:4173/entrancego';
 try {
   await p.goto(B + '/', { waitUntil: 'networkidle' });
   ok('drawer hidden initially', !(await p.locator('.drawer-root.is-open').count()));
