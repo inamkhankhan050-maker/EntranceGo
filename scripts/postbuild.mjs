@@ -24,14 +24,14 @@ const subjects = seed.subjects.filter(pub);
 const subjById = Object.fromEntries(subjects.map((s) => [s.id, s]));
 const routes = [
   ['/', null, null],
-  ['/subjects', 'All Subjects', 'Browse every StudyVeda subject: competitive exams, programming, engineering, university subjects and interview preparation.'],
+  ['/subjects', 'All Subjects', 'Browse every EntranceGo subject: competitive exams, programming, engineering, university subjects and interview preparation.'],
   ['/exams', 'Competitive Examinations', 'Practice questions for SSC and Railway exams.'],
   ['/practice', 'Practice Sets', 'Ready-made MCQ practice sets and timed mini mocks.'],
-  ['/about', 'About StudyVeda', 'StudyVeda is a free MCQ practice platform.'],
-  ['/contact', 'Contact', 'Contact the StudyVeda team.'],
-  ['/privacy', 'Privacy Policy', 'How StudyVeda handles your data.'],
-  ['/terms', 'Terms of Use', 'Terms for using StudyVeda.'],
-  ['/disclaimer', 'Disclaimer', 'StudyVeda disclaimer.'],
+  ['/about', 'About EntranceGo', 'EntranceGo is a free MCQ practice platform.'],
+  ['/contact', 'Contact', 'Contact the EntranceGo team.'],
+  ['/privacy', 'Privacy Policy', 'How EntranceGo handles your data.'],
+  ['/terms', 'Terms of Use', 'Terms for using EntranceGo.'],
+  ['/disclaimer', 'Disclaimer', 'EntranceGo disclaimer.'],
   ...subjects.map((s) => [`/subjects/${s.slug}`, `${s.name} MCQ Questions and Answers`, `Practise ${s.name} MCQs topic by topic with answers and explanations.`]),
   ...seed.topics.filter((t) => pub(t) && subjById[t.subject_id]).map((t) => [`/subjects/${subjById[t.subject_id].slug}/${t.slug}`, `${t.name} – ${subjById[t.subject_id].name} MCQs`, `${t.name} multiple-choice questions for ${subjById[t.subject_id].name}, with answers and explanations.`]),
   ...seed.exams.filter(pub).map((e) => [`/exams/${e.slug}`, `${e.name} Practice Questions`, `Practise ${e.name}-style MCQs with answers and explanations.`]),
@@ -42,7 +42,7 @@ const appRoutes = ['/search', '/login', '/progress', '/play', '/admin', '/admin/
 
 function page(path, title, desc, noindex) {
   let html = template;
-  if (title) html = html.replace(/<title>.*?<\/title>/, `<title>${esc(title)} | StudyVeda</title>`).replace(/(<meta property="og:title" content=")[^"]*/, `$1${esc(title)} | StudyVeda`);
+  if (title) html = html.replace(/<title>.*?<\/title>/, `<title>${esc(title)} | EntranceGo</title>`).replace(/(<meta property="og:title" content=")[^"]*/, `$1${esc(title)} | EntranceGo`);
   if (desc) html = html.replace(/(<meta name="description" content=")[^"]*/, `$1${esc(desc)}`).replace(/(<meta property="og:description" content=")[^"]*/, `$1${esc(desc)}`);
   if (SITE) html = html.replace(/(<link rel="canonical" href=")[^"]*/, `$1${SITE}${path === '/' ? '/' : path}`);
   if (noindex) html = html.replace('</head>', '    <meta name="robots" content="noindex,nofollow" />\n  </head>');
