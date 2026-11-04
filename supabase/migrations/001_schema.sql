@@ -1,5 +1,5 @@
 -- =====================================================================
--- StudyVeda database schema (Supabase / PostgreSQL 15+)
+-- EntranceGo database schema (Supabase / PostgreSQL 15+)
 -- Run this once in Supabase: Dashboard → SQL Editor → New query → paste → Run.
 -- Then run supabase/seed.sql to load the catalog and sample questions.
 -- =====================================================================
