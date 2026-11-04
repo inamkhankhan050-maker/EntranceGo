@@ -23,7 +23,7 @@ export function AdminLayout() {
   if (!IS_DEMO) {
     if (!ready || (user && !adminChecked)) gate = <Loading label="Checking access…" />;
     else if (!user) gate = (
-      <div className="card gate"><h1>Admin sign-in required</h1><p className="muted">Sign in with an administrator account to manage StudyVeda content.</p>
+      <div className="card gate"><h1>Admin sign-in required</h1><p className="muted">Sign in with an administrator account to manage EntranceGo content.</p>
         <Link className="btn btn-primary" to="/login" state={{ from: loc.pathname }}>Sign in</Link></div>);
     else if (!isAdmin) gate = (
       <div className="card gate"><h1>Not authorised</h1><p className="muted">You're signed in as {user.email}, but this account is not an administrator. Admin access is granted only from the database (see the README, "Create the first administrator").</p>
