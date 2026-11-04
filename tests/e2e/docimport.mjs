@@ -10,7 +10,7 @@ const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
 await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
 const p = await ctx.newPage();
 const errors = []; p.on('pageerror', (e) => errors.push(e.message));
-const B = 'http://localhost:4173/studyveda';
+const B = 'http://localhost:4173/entrancego';
 const FX = '/tmp/fx'; mkdirSync(FX, { recursive: true });
 ['auto.docx', 'typed.docx', 'table.docx', 'manzil-table.pdf'].forEach((f) => copyFileSync(new URL('../fixtures/' + f, import.meta.url), FX + '/' + f)); // made with: pandoc tests/fixtures/<name>.md -o <name>.docx
 try {
