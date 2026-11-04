@@ -57,7 +57,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="muted small footer-about">Free MCQ practice with clear explanations. StudyVeda is an independent learning platform and is not affiliated with SSC, RRB or any exam-conducting body.</p>
+          <p className="muted small footer-about">Free MCQ practice with clear explanations. EntranceGo is an independent learning platform and is not affiliated with SSC, RRB or any exam-conducting body.</p>
         </div>
         <div>
           <h2 className="footer-h">Practice</h2>
@@ -68,11 +68,11 @@ function Footer() {
           <Link to="/subjects/aptitude">Aptitude</Link><Link to="/subjects/english">English</Link><Link to="/subjects/python">Python</Link><Link to="/exams/ssc-cgl">SSC CGL</Link>
         </div>
         <div>
-          <h2 className="footer-h">StudyVeda</h2>
+          <h2 className="footer-h">EntranceGo</h2>
           <Link to="/about">About</Link><Link to="/contact">Contact</Link><Link to="/privacy">Privacy Policy</Link><Link to="/terms">Terms</Link><Link to="/disclaimer">Disclaimer</Link>
         </div>
       </div>
-      <div className="container footer-bottom muted small">© {new Date().getFullYear()} StudyVeda. Learn Smarter. Practice Better.</div>
+      <div className="container footer-bottom muted small">© {new Date().getFullYear()} EntranceGo. Learn Smarter. Practice Better.</div>
     </footer>
   );
 }
