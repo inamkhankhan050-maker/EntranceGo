@@ -5,7 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { resolve, extname, join } from 'node:path';
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.png': 'image/png' };
-export function serve(dist, base = '/studyveda/', port = 4173) {
+export function serve(dist, base = '/entrancego/', port = 4173) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
     if (!url.pathname.startsWith(base)) { res.writeHead(404); return res.end('not found'); }
@@ -25,4 +25,4 @@ export function serve(dist, base = '/studyveda/', port = 4173) {
   });
   return new Promise((r) => server.listen(port, () => r(server)));
 }
-if (process.argv[1].endsWith('serve.mjs')) serve(resolve(process.argv[2] || 'dist')).then(() => console.log('http://localhost:4173/studyveda/'));
+if (process.argv[1].endsWith('serve.mjs')) serve(resolve(process.argv[2] || 'dist')).then(() => console.log('http://localhost:4173/entrancego/'));
