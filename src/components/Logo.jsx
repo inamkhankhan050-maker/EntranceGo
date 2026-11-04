@@ -17,10 +17,10 @@ export default function Logo({ to = '/', sub = true }) {
   // Already on that page: the router won't navigate, so jump back to the top instead of doing nothing.
   const onClick = () => { if (pathname === to) window.scrollTo({ top: 0, behavior: 'smooth' }); };
   return (
-    <Link to={to} className="logo" aria-label="StudyVeda home" onClick={onClick}>
+    <Link to={to} className="logo" aria-label="EntranceGo home" onClick={onClick}>
       <LogoMark />
       <span className="logo-text">
-        <span className="logo-name">Study<span>Veda</span></span>
+        <span className="logo-name">Entrance<span>Go</span></span>
         {sub && <span className="logo-tag">Learn Smarter. Practice Better.</span>}
       </span>
     </Link>
