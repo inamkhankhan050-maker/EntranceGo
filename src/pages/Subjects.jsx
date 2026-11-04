@@ -8,7 +8,7 @@ import { Loading, ErrorState, Empty } from '../components/States.jsx';
 import { normText } from '../lib/text.js';
 
 export default function Subjects() {
-  useMeta('All Subjects', 'Browse every StudyVeda subject: competitive exams, computer and programming, engineering and GATE, graduation and postgraduate, and interview preparation.');
+  useMeta('All Subjects', 'Browse every EntranceGo subject: competitive exams, computer and programming, engineering and GATE, graduation and postgraduate, and interview preparation.');
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
   const [filter, setFilter] = useState('');
   const { hash } = useLocation();
