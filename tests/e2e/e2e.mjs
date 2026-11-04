@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { serve } from './serve.mjs';
 
-const BASE = 'http://localhost:4173/studyveda';
+const BASE = 'http://localhost:4173/entrancego';
 const SHOTS = process.env.SHOTS || '/tmp/shots';
 mkdirSync(SHOTS, { recursive: true });
 let pass = 0, fail = 0;
@@ -61,7 +61,7 @@ await step('direct navigation', async () => {
     const h1 = await page.locator('h1').first().innerText();
     ok(`direct load + refresh ${p}`, s === 200 && h1 === h, `status=${s} h1=${h1}`);
   }
-  ok('nested page has its own <title>', (await page.title()) === 'English MCQ Questions and Answers | StudyVeda');
+  ok('nested page has its own <title>', (await page.title()) === 'English MCQ Questions and Answers | EntranceGo');
   const s404 = await go('/subjects/does-not-exist');
   ok('unknown URL falls back to the app (404.html) and shows a not-found state', s404 === 404 && (await text()).includes("doesn't exist"));
   await go('/subjects/non-verbal-reasoning');
