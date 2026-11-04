@@ -1,4 +1,4 @@
--- Make an existing StudyVeda user an administrator.
+-- Make an existing EntranceGo user an administrator.
 -- 1. Create the user first: Supabase Dashboard → Authentication → Users → Add user
 --    (or sign up once on the site's /login page and confirm the email).
 -- 2. Replace the email below, paste this into Dashboard → SQL Editor, and Run.
