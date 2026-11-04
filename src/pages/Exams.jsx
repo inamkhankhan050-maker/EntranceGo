@@ -16,7 +16,7 @@ export function Exams() {
   return (
     <div className="container section">
       <Breadcrumbs items={[{ label: 'Exams' }]} />
-      <header className="page-head"><h1>Competitive examinations</h1><p className="muted">Questions tagged to each exam's pattern. StudyVeda is independent and not affiliated with any conducting body.</p></header>
+      <header className="page-head"><h1>Competitive examinations</h1><p className="muted">Questions tagged to each exam's pattern. EntranceGo is independent and not affiliated with any conducting body.</p></header>
       {groups.map((g) => (
         <section key={g} className="cat-block">
           <h2>{g === 'SSC' ? 'SSC Exams' : g === 'Railway' ? 'Railway Exams' : g}</h2>
