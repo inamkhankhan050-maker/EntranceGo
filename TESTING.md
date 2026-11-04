@@ -1,4 +1,4 @@
-# StudyVeda — test results (26 Oct 2026)
+# EntranceGo — test results (26 Oct 2026)
 
 All results below were produced by running the test files in this repository. Nothing is assumed.
 
@@ -6,7 +6,7 @@ All results below were produced by running the test files in this repository. No
 |---|---|---|
 | Unit (scoring, validation, CSV, seed integrity) | `npm test` | **17 / 17 passed** |
 | Database security: real schema + seed + RLS on PostgreSQL 16 (PGlite), as anon / student / admin | `npm run test:db` | **30 / 30 passed** |
-| Browser end-to-end, built site served like GitHub Pages under `/studyveda/` (demo backend) | `node tests/e2e/e2e.mjs` | **85 / 85 passed** |
+| Browser end-to-end, built site served like GitHub Pages under `/entrancego/` (demo backend) | `node tests/e2e/e2e.mjs` | **85 / 85 passed** |
 | Browser, Supabase build against an unreachable backend + secret-key guard | `node tests/e2e/supabase-mode.mjs` | **6 / 6 passed** |
 | Production build | `npm run build` | passes; main bundle 80 KB gzip, admin code split into its own chunks |
 
