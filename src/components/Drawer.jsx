@@ -8,7 +8,7 @@ import { getCatalog } from '../lib/api.js';
 import { useTheme } from '../lib/theme.js';
 import { IS_DEMO } from '../lib/config.js';
 
-// Menu groups (original StudyVeda labels) mapped to catalog categories.
+// Menu groups (original EntranceGo labels) mapped to catalog categories.
 const GROUPS = [
   ['competitive-exams', 'Competitive Exams MCQs'],
   ['computer-programming', 'Computer MCQs'],
