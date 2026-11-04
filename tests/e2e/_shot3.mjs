@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+import { serve } from './serve.mjs';
+await serve(new URL('../../dist', import.meta.url).pathname);
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+await p.addInitScript(() => localStorage.setItem('sv-theme', 'dark'));
+await p.goto('http://localhost:4173/entrancego/admin/questions', { waitUntil: 'networkidle' }); await p.screenshot({ path: '/tmp/a1.png' });
+await p.goto('http://localhost:4173/entrancego/', { waitUntil: 'networkidle' }); await p.screenshot({ path: '/tmp/a2.png' });
+await p.getByRole('button', { name: 'Open menu' }).click(); await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/a3.png' });
+await b.close(); process.exit(0);
