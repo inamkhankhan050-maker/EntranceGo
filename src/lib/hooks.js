@@ -31,7 +31,7 @@ function setMeta(attr, key, content) {
 export function useMeta(title, description, { noindex = false } = {}) {
   const { pathname } = useLocation();
   useEffect(() => {
-    const full = title ? `${title} | StudyVeda` : 'StudyVeda — Learn Smarter. Practice Better.';
+    const full = title ? `${title} | EntranceGo` : 'EntranceGo — Learn Smarter. Practice Better.';
     document.title = full;
     const desc = description || 'Practise MCQs for competitive exams, programming, engineering and university subjects with answers and explanations.';
     setMeta('name', 'description', desc);
