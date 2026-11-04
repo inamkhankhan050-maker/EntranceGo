@@ -12,7 +12,7 @@ export function normalizeMobile(raw) {
 }
 
 export default function Login() {
-  useMeta('Sign in', 'Sign in to StudyVeda to save your results and bookmarks.', { noindex: true });
+  useMeta('Sign in', 'Sign in to EntranceGo to save your results and bookmarks.', { noindex: true });
   const auth = useAuth();
   const nav = useNavigate();
   const from = useLocation().state?.from || '/progress';
@@ -46,7 +46,7 @@ export default function Login() {
     <div className="container section auth-wrap">
       <form className="card auth-card" onSubmit={submit} noValidate>
         <LogoMark size={44} />
-        <h1>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Sign in to StudyVeda'}</h1>
+        <h1>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Sign in to EntranceGo'}</h1>
         <p className="muted small">Join the discussion, save your results and bookmark questions. Administrators sign in here too.</p>
         {IS_DEMO && <div className="notice">Demo mode: your account is saved only in this browser on this device. Shared accounts turn on once the database is connected.</div>}
         {mode === 'signup' && (
