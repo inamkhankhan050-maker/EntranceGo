@@ -1,4 +1,4 @@
-// Single source of truth for StudyVeda's starter catalog and ORIGINAL sample questions.
+// Single source of truth for EntranceGo's starter catalog and ORIGINAL sample questions.
 // `npm run seed` turns this into supabase/seed.sql (database) and src/data/seed.json (demo mode).
 
 export const categories = [
@@ -180,7 +180,7 @@ export const questions = [
 
   ['python', 'python-basics', null, 'easy', 'What is the output of print(type([])) in Python 3?', "<class 'list'>", "<class 'tuple'>", "<class 'dict'>", "<class 'array'>", 'A', '[] creates an empty list, so type([]) is list.'],
   ['python', 'python-basics', null, 'easy', 'Which keyword is used to define a function in Python?', 'func', 'def', 'function', 'define', 'B', "Functions are defined with 'def', e.g. def greet():"],
-  ['python', 'python-basics', null, 'easy', "What does len('StudyVeda') return?", '8', '9', '10', '7', 'B', "'StudyVeda' has 9 characters: S-t-u-d-y-V-e-d-a."],
+  ['python', 'python-basics', null, 'easy', "What does len('EntranceGo') return?", '8', '9', '10', '7', 'C', "'EntranceGo' has 10 characters: E-n-t-r-a-n-c-e-G-o.", 'published', "What does len('EntranceGo') return?"],
   ['python', 'data-types', null, 'easy', 'Which of these Python data types is immutable?', 'list', 'dict', 'set', 'tuple', 'D', 'Tuples cannot be changed after creation; lists, dicts and sets are mutable.'],
   ['python', 'operators', null, 'easy', 'What is the output of print(2 ** 3)?', '6', '8', '9', '5', 'B', '** is the exponent operator: 2³ = 8.'],
   ['python', 'operators', null, 'medium', 'What is the output of print(10 // 3)?', '3.33', '3', '4', '1', 'B', '// is floor division, so 10 // 3 = 3. (10 % 3 would give 1.)'],
