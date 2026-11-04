@@ -36,7 +36,7 @@ export function QuestionsAdmin() {
   const setStatus = async (q, status) => { try { await admin.update('questions', q.id, { status }); toast(status === 'published' ? 'Question published.' : 'Question moved to drafts.'); reload(); } catch (e) { toast(e.message, 'error'); } };
   const exportAll = async () => {
     setExporting(true);
-    try { const all = await admin.select('questions'); downloadText(`studyveda-questions-${new Date().toISOString().slice(0, 10)}.csv`, questionsToCSV(all, L)); toast(`Exported ${all.length} questions.`); }
+    try { const all = await admin.select('questions'); downloadText(`entrancego-questions-${new Date().toISOString().slice(0, 10)}.csv`, questionsToCSV(all, L)); toast(`Exported ${all.length} questions.`); }
     catch (e) { toast(e.message, 'error'); }
     setExporting(false);
   };
