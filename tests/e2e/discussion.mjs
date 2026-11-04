@@ -9,7 +9,7 @@ const ctx = await b.newContext({ viewport: { width: 360, height: 780 } });
 await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
 const p = await ctx.newPage();
 const errors = []; p.on('pageerror', (e) => errors.push(e.message));
-const B = 'http://localhost:4173/studyveda';
+const B = 'http://localhost:4173/entrancego';
 const TOPIC = B + '/subjects/aptitude/percentage';
 try {
   await p.goto(TOPIC, { waitUntil: 'networkidle' });
@@ -75,7 +75,7 @@ try {
   // logo
   await p.evaluate(() => window.scrollTo(0, 900)); await p.waitForTimeout(200);
   await p.locator('header .logo').click(); await p.waitForTimeout(600);
-  ok('logo goes to the home page', /\/studyveda\/?$/.test(p.url()) && (await p.locator('main h1').first().innerText()).length > 0, p.url());
+  ok('logo goes to the home page', /\/entrancego\/?$/.test(p.url()) && (await p.locator('main h1').first().innerText()).length > 0, p.url());
   await p.evaluate(() => window.scrollTo(0, 1500)); await p.waitForTimeout(200);
   await p.locator('header .logo').click(); await p.waitForTimeout(900);
   ok('logo on the home page scrolls back to top', (await p.evaluate(() => window.scrollY)) < 5);
