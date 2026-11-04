@@ -1,4 +1,4 @@
--- StudyVeda: per-question discussion (comments).
+-- EntranceGo: per-question discussion (comments).
 -- Only signed-in users can read or post comments. Users can delete their own comments; admins can delete any.
 -- Comments are visible only on questions the reader can see (RLS on questions applies inside the check).
 create table if not exists public.question_comments (
