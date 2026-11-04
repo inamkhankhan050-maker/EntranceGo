@@ -1,4 +1,4 @@
-# StudyVeda — Learn Smarter. Practice Better.
+# EntranceGo — Learn Smarter. Practice Better.
 
 An original MCQ practice platform: a static React site for **GitHub Pages**, with **Supabase**
 (PostgreSQL + Auth + Row Level Security) as the database and security layer.
@@ -52,7 +52,7 @@ An original MCQ practice platform: a static React site for **GitHub Pages**, wit
 
 ## 3. Deploy on GitHub Pages (free)
 
-1. Create a GitHub repository (e.g. `studyveda`) and push this folder to the `main` branch.
+1. Create a GitHub repository (e.g. `entrancego`) and push this folder to the `main` branch.
 2. Repository → **Settings → Pages** → *Build and deployment* → **Source: GitHub Actions**.
 3. Repository → **Settings → Secrets and variables → Actions → Variables** tab → **New repository variable**:
 
@@ -60,11 +60,11 @@ An original MCQ practice platform: a static React site for **GitHub Pages**, wit
    |---|---|
    | `VITE_SUPABASE_URL` | your Project URL |
    | `VITE_SUPABASE_ANON_KEY` | your anon/publishable key |
-   | `VITE_BASE_PATH` | `/StudyVeda/` (your repo name between slashes; `/` if you use a custom domain) — optional, defaults to `/<repo>/` |
-   | `VITE_SITE_URL` | `https://USERNAME.github.io/studyveda` — optional, used for canonical URLs + sitemap |
+   | `VITE_BASE_PATH` | `/EntranceGo/` (your repo name between slashes; `/` if you use a custom domain) — optional, defaults to `/<repo>/` |
+   | `VITE_SITE_URL` | `https://USERNAME.github.io/entrancego` — optional, used for canonical URLs + sitemap |
 
    These are *public* values (they ship to every browser), so Variables are appropriate; using Secrets also works.
-4. Push to `main` (or Actions → *Test and deploy* → **Run workflow**). The workflow runs the unit + database security tests, builds, and publishes. The site appears at `https://USERNAME.github.io/StudyVeda/`.
+4. Push to `main` (or Actions → *Test and deploy* → **Run workflow**). The workflow runs the unit + database security tests, builds, and publishes. The site appears at `https://USERNAME.github.io/EntranceGo/`.
 
 **Routing on GitHub Pages:** every known page (all subjects, topics, exams, sets, static pages, admin screens) is written as its own `index.html` with its own title/description/canonical, so direct visits and refreshes return 200. Any other URL (e.g. a subject you add later in the admin panel) is served by `404.html`, which loads the same app and renders the right page.
 
