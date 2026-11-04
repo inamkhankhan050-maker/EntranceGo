@@ -9,7 +9,7 @@ import { Loading, ErrorState, Empty } from '../components/States.jsx';
 export default function Search() {
   const [params] = useSearchParams();
   const q = params.get('q') || '';
-  useMeta(q ? `Search: ${q}` : 'Search', 'Search StudyVeda subjects, topics, exams and questions.', { noindex: true });
+  useMeta(q ? `Search: ${q}` : 'Search', 'Search EntranceGo subjects, topics, exams and questions.', { noindex: true });
   const { data, loading, error, reload } = useAsync(() => search(q), [q]);
   const total = data ? data.subjects.length + data.topics.length + data.exams.length + data.sets.length + data.questions.length : 0;
   return (
