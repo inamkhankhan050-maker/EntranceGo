@@ -27,7 +27,7 @@ export function MockAttempt() {
   const { data, loading, error, reload } = useAsync(() => (g.user ? backend.getMockAttempt(id) : Promise.resolve(null)), [id, g.user?.id]);
   useMeta(data ? data.mock.title : 'Mock test', undefined, { noindex: true });
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading label="Loading your mock test…" />;
+  if (loading || (!data && !error)) return <Loading label="Loading your mock test…" />;
   if (error) return <div className="container section"><ErrorState error={error} onRetry={reload} /></div>;
   if (data.attempt.status === 'submitted') return <Navigate to={`/mock/result/${id}`} replace />;
   if (data.attempt.user_id !== g.user.id) return <Navigate to={`/mock/result/${id}`} replace />;
@@ -164,7 +164,7 @@ export function MockResult() {
   const [filter, setFilter] = useState('all');
   useMeta(data ? `Result: ${data.mock.title}` : 'Result', undefined, { noindex: true });
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading label="Loading your result…" />;
+  if (loading || (!data && !error)) return <Loading label="Loading your result…" />;
   if (error) return <div className="container section narrow"><ErrorState error={error} /><p className="center"><Link to="/my/mock-tests">Go to My Mock Tests</Link></p></div>;
   const a = data.attempt;
   const own = a.user_id === g.user.id;

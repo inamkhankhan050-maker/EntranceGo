@@ -26,7 +26,7 @@ export function MyMockTests() {
   const g = useSignedIn();
   const { data, loading, error, reload } = useAsync(() => (g.user ? getMyMockData(g.user.id) : Promise.resolve(null)), [g.user?.id]);
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading />;
+  if (loading || (!data && !error)) return <Loading />;
   if (error) return <div className="container section"><ErrorState error={error} onRetry={reload} /></div>;
   const d = data;
   const attemptsOf = (mid) => d.attempts.filter((a) => a.mock_id === mid);
@@ -103,7 +103,7 @@ export function MyPerformance() {
   const g = useSignedIn();
   const { data, loading, error, reload } = useAsync(() => (g.user ? getMyMockData(g.user.id) : Promise.resolve(null)), [g.user?.id]);
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading />;
+  if (loading || (!data && !error)) return <Loading />;
   if (error) return <div className="container section"><ErrorState error={error} onRetry={reload} /></div>;
   const d = data;
   const series = [...d.submitted].reverse();   // oldest -> newest
@@ -174,7 +174,7 @@ export function MockReport() {
   usePrint(!!data?.attempt && data.attempt.status === 'submitted');
   useMeta(data ? `Result report – ${data.mock.title}` : 'Result report', undefined, { noindex: true });
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading label="Preparing your report…" />;
+  if (loading || (!data && !error)) return <Loading label="Preparing your report…" />;
   if (error) return <div className="container section narrow"><ErrorState error={error} /></div>;
   const a = data.attempt;
   if (a.status !== 'submitted') return <div className="container section narrow"><div className="notice">The report is available after the mock is submitted.</div></div>;
@@ -213,7 +213,7 @@ export function MyAnalysisReport() {
   usePrint(!!data);
   useMeta('Performance analysis', undefined, { noindex: true });
   if (g.wait) return g.wait;
-  if (loading || !data) return <Loading label="Preparing your analysis…" />;
+  if (loading || (!data && !error)) return <Loading label="Preparing your analysis…" />;
   if (error) return <div className="container section narrow"><ErrorState error={error} /></div>;
   const d = data;
   const name = g.user.user_metadata?.full_name || g.user.email;

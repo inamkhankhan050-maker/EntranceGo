@@ -176,10 +176,10 @@ if (phase === 'run') {
   const x1 = await sb2.rpc('get_mock_attempt', { p_attempt: a1 });
   const x2 = await sb2.from('mock_attempts').select('id').eq('id', a1);
   const x3 = await sb2.from('mock_attempt_questions').select('question_id').eq('attempt_id', a1);
-  const x4 = await sb2.from('student_question_history').select('question_id');
+  const x4 = await sb2.from('student_question_history').select('user_id');
   const anon = createClient(SB_URL, ANON, { auth: { persistSession: false } });
   const x5 = await anon.rpc('get_mock_attempt', { p_attempt: a1 });
-  ok('17a. API: student 2 / guests get nothing for student 1\'s attempt', !!x1.error && x2.data.length === 0 && x3.data.length === 0 && x4.data.length === 0 && !!x5.error, x1.error?.message);
+  ok('17a. API: student 2 / guests get nothing for student 1\'s attempt', !!x1.error && x2.data.length === 0 && x3.data.length === 0 && x4.data.every((r) => r.user_id !== r1.data.user.id) && !!x5.error, x1.error?.message);
   const c2 = await newCtx(); const p2 = await c2.newPage();
   await p2.goto(`${BASE}/login`, { waitUntil: 'networkidle' });
   await p2.getByLabel('Email').fill(st.s2.email); await p2.getByLabel('Password').fill(st.s2.password);
