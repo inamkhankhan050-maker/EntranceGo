@@ -94,7 +94,7 @@ export default function ImportCSV() {
   return (
     <>
       <AdminHead title="Bulk import" sub="Add many questions at once from a CSV, Word (.docx) or PDF file. Nothing is saved until you confirm.">
-        <button className="btn btn-outline" onClick={() => downloadText('studyveda-sample.csv', SAMPLE_CSV)}><Download size={17} /> Sample CSV</button>
+        <button className="btn btn-outline" onClick={() => downloadText('entrancego-sample.csv', SAMPLE_CSV)}><Download size={17} /> Sample CSV</button>
       </AdminHead>
 
       <section className="card">
