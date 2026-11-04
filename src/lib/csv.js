@@ -8,7 +8,7 @@ export const REQUIRED_COLUMNS = ['question', 'option_a', 'option_b', 'option_c',
 export const SAMPLE_CSV = Papa.unparse({
   fields: CSV_COLUMNS,
   data: [
-    ['What is 20% of 150?', '20', '25', '30', '35', 'C', '20% of 150 = 0.2 × 150 = 30.', 'aptitude', 'percentage', 'easy', 'draft', 'ssc-cgl', 'percentage;basics', 'StudyVeda original', ''],
+    ['What is 20% of 150?', '20', '25', '30', '35', 'C', '20% of 150 = 0.2 × 150 = 30.', 'aptitude', 'percentage', 'easy', 'draft', 'ssc-cgl', 'percentage;basics', 'EntranceGo original', ''],
     ["Which Python keyword is used to create a class?", 'class', 'def', 'object', 'struct', 'A', "Classes are created with the 'class' keyword.", 'python', 'python-basics', 'easy', 'published', '', 'python;oop', '', ''],
   ],
 });
