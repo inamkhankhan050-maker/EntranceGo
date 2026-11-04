@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { useMeta } from '../lib/hooks.js';
 import { LogoMark } from '../components/Logo.jsx';
 import { IS_DEMO } from '../lib/config.js';
+import { peekNext, takeNext } from '../lib/mocks.js';
 
 export function normalizeMobile(raw) {
   const d = String(raw || '').replace(/\D/g, '');
@@ -15,8 +16,11 @@ export default function Login() {
   useMeta('Sign in', 'Sign in to EntranceGo to save your results and bookmarks.', { noindex: true });
   const auth = useAuth();
   const nav = useNavigate();
-  const from = useLocation().state?.from || '/progress';
-  const [mode, setMode] = useState('signin');
+  const st = useLocation().state || {};
+  // Where to go after sign-in: the page that sent us here, or the mock a guest picked before confirming their email.
+  const from = st.from || peekNext() || '/progress';
+  const forMock = st.reason === 'mock' || (peekNext() || '').startsWith('/mock-tests/');
+  const [mode, setMode] = useState(st.reason === 'mock' ? 'signup' : 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -25,17 +29,17 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  if (auth.user && mode !== 'done') return <Navigate to={from} replace />;
+  if (auth.user && mode !== 'done') { takeNext(); return <Navigate to={from} replace />; }
 
   const submit = async (e) => {
     e.preventDefault(); if (busy) return;
     setBusy(true); setMsg(null);
     try {
-      if (mode === 'signin') { await auth.signIn(email.trim(), password); nav(from, { replace: true }); }
+      if (mode === 'signin') { await auth.signIn(email.trim(), password); takeNext(); nav(from, { replace: true }); }
       else if (mode === 'signup') {
         if (!phone) throw new Error('Enter a valid 10-digit mobile number.');
         const r = await auth.signUp(email.trim(), password, name.trim(), phone);
-        setMsg({ ok: true, text: r?.session ? 'Account created. You are signed in.' : 'Account created. Check your email for a confirmation link, then sign in.' });
+        setMsg({ ok: true, text: r?.session ? 'Account created. You are signed in.' : 'Account created. Open the confirmation link we emailed you, then sign in here' + (forMock ? ' and your mock test will open.' : '.') });
         setMode('signin');
       } else { await auth.resetPassword(email.trim()); setMsg({ ok: true, text: 'If that email has an account, a reset link is on its way.' }); }
     } catch (err) { setMsg({ ok: false, text: err.message }); }
@@ -47,7 +51,10 @@ export default function Login() {
       <form className="card auth-card" onSubmit={submit} noValidate>
         <LogoMark size={44} />
         <h1>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Sign in to EntranceGo'}</h1>
-        <p className="muted small">Join the discussion, save your results and bookmark questions. Administrators sign in here too.</p>
+        {forMock ? (
+          <div className="notice login-mock" role="note"><strong>{st.mockTitle ? `Start “${st.mockTitle}”` : 'Full mock tests need a free account'}</strong><br />
+            {mode === 'signup' ? 'Create your free student account to start the mock, save your result and download your report.' : 'Sign in to start the mock test. You will return to the same mock right after.'}</div>
+        ) : <p className="muted small">Join the discussion, save your results and bookmark questions. Administrators sign in here too.</p>}
         {IS_DEMO && <div className="notice">Demo mode: your account is saved only in this browser on this device. Shared accounts turn on once the database is connected.</div>}
         {mode === 'signup' && (
           <label className="field"><span>Your name</span>

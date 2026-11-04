@@ -131,9 +131,55 @@ export const supa = {
     return true;
   },
 
+
+  // ---------- mock tests ----------
+  // Public reads (RLS: published only). Every student write goes through SECURITY DEFINER functions
+  // in supabase/migrations/004_mock_tests.sql, which verify the signed-in user and ownership.
+  async mockCatalog() {
+    const c = sb();
+    const [courses, mocks, sections, subjects] = await Promise.all([
+      c.from('courses').select('*').eq('status', 'published').order('sort_order'),
+      c.from('mock_tests').select('*').eq('status', 'published').order('sort_order').order('created_at'),
+      c.from('mock_test_sections').select('*').order('position'),
+      c.from('subjects').select('id,slug,name,icon'),
+    ]).then((rs) => rs.map(unwrap));
+    return { courses, mocks, sections, subjects };
+  },
+  async coursePoolCounts(course_id) { return unwrap(await sb().rpc('course_pool_counts', { p_course: course_id })); },
+  async startMock(mock_id) { return unwrap(await sb().rpc('start_mock', { p_mock: mock_id })); },
+  async getMockAttempt(id) { return unwrap(await sb().rpc('get_mock_attempt', { p_attempt: id })); },
+  async saveMockAnswer(attempt, question, option) { return unwrap(await sb().rpc('save_mock_answer', { p_attempt: attempt, p_question: question, p_option: option })); },
+  async submitMock(attempt, answers) { return unwrap(await sb().rpc('submit_mock', { p_attempt: attempt, p_answers: answers })); },
+  // RLS returns only the signed-in student's rows (admins see all).
+  async myMockAttempts(user_id) {
+    let q = sb().from('mock_attempts').select('*').order('started_at', { ascending: false }).limit(500);
+    if (user_id) q = q.eq('user_id', user_id);
+    return unwrap(await q);
+  },
+  async myMockAnswers(attempt_ids) {
+    if (!attempt_ids.length) return [];
+    const out = [];
+    for (let i = 0; i < attempt_ids.length; i += 100) {
+      out.push(...await fetchAll(() => sb().from('mock_attempt_questions').select('attempt_id,question_id,subject_id,topic_id,difficulty,chosen_option,is_correct').in('attempt_id', attempt_ids.slice(i, i + 100))));
+    }
+    return out;
+  },
+  async topicsByIds(ids) { return ids.length ? unwrap(await sb().from('topics').select('id,name,subject_id').in('id', ids)) : []; },
+  // admin
+  async adminMockAttempts() { return fetchAll(() => sb().from('mock_attempts').select('*').order('started_at', { ascending: false })); },
+  async adminCourseLinks(course_id) { return fetchAll(() => sb().from('course_questions').select('question_id').eq('course_id', course_id)); },
+  async adminLinkQuestions(course_id, ids) {
+    for (let i = 0; i < ids.length; i += 500) unwrap(await sb().from('course_questions').upsert(ids.slice(i, i + 500).map((question_id) => ({ course_id, question_id })), { onConflict: 'course_id,question_id', ignoreDuplicates: true }));
+    return true;
+  },
+  async adminUnlinkQuestions(course_id, ids) {
+    for (let i = 0; i < ids.length; i += 200) unwrap(await sb().from('course_questions').delete().eq('course_id', course_id).in('question_id', ids.slice(i, i + 200)));
+    return true;
+  },
+
   // ---------- admin (RLS: admins only) ----------
   async adminSelect(table) {
-    const order = { questions: 'updated_at', categories: 'sort_order', subjects: 'sort_order', topics: 'sort_order', exams: 'sort_order', practice_sets: 'updated_at', student_profiles: 'created_at' }[table];
+    const order = { questions: 'updated_at', categories: 'sort_order', subjects: 'sort_order', topics: 'sort_order', exams: 'sort_order', practice_sets: 'updated_at', student_profiles: 'created_at', courses: 'sort_order', mock_tests: 'updated_at', mock_test_sections: 'position' }[table];
     return fetchAll(() => { const q = sb().from(table).select(table === 'questions' ? QCOLS : '*'); return order ? q.order(order) : q; });
   },
   async adminInsert(table, row) { return unwrap(await sb().from(table).insert(row).select().single()); },

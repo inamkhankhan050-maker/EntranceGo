@@ -55,7 +55,10 @@ export default function Home() {
             <h2>Search MCQs, Topics &amp; Exams</h2>
             <SearchBox big />
           </div>
-          <Link to="/practice" className="btn btn-primary btn-lg sv-start">Start Practicing <ArrowRight size={18} /></Link>
+          <div className="action-row center">
+            <Link to="/practice" className="btn btn-primary btn-lg sv-start">Start Practicing <ArrowRight size={18} /></Link>
+            <Link to="/mock-tests" className="btn btn-outline btn-lg sv-start">Full Mock Tests <ArrowRight size={18} /></Link>
+          </div>
         </div>
       </section>
 

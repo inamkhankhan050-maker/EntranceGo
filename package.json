@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "seed": "node scripts/build-seed.mjs",
     "test": "vitest run",
-    "test:db": "node tests/db/rls.test.mjs",
+    "test:db": "node tests/db/rls.test.mjs && node tests/db/mock.test.mjs",
     "test:e2e": "node tests/e2e/e2e.mjs && node tests/e2e/supabase-mode.mjs",
     "test:all": "npm test && npm run test:db && npm run build && npm run test:e2e",
     "serve:dist": "node tests/e2e/serve.mjs dist"

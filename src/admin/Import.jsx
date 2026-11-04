@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Upload, CheckCircle2, XCircle, MinusCircle, FileText } from 'lucide-react';
-import { admin } from '../lib/api.js';
+import { admin, backend } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
 import { parseQuestionCSV, buildImportRows, SAMPLE_CSV, CSV_COLUMNS, REQUIRED_COLUMNS, downloadText } from '../lib/csv.js';
 import { extractQuestions, sniffKind, DOC_SAMPLE, DOC_MAX_BYTES } from '../lib/docImport.js';
@@ -13,8 +13,8 @@ const MAX_BYTES = 5 * 1024 * 1024;
 export default function ImportCSV() {
   const toast = useToast();
   const { data: L, loading, error, reload } = useAsync(async () => {
-    const [l, qs] = await Promise.all([admin.lookups(), admin.select('questions')]);
-    return { ...l, existing: qs.map((q) => ({ subject_id: q.subject_id, question: q.question })) };
+    const [l, qs, courses] = await Promise.all([admin.lookups(), admin.select('questions'), admin.select('courses').catch(() => [])]);
+    return { ...l, courses, existing: qs.map((q) => ({ subject_id: q.subject_id, question: q.question })) };
   }, []);
   const [file, setFile] = useState(null);
   const [kind, setKind] = useState(null);
@@ -27,6 +27,7 @@ export default function ImportCSV() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [course, setCourse] = useState('');
   const inputRef = useRef();
 
   const fail = (msg) => { setKind('csv'); setCsvParsed({ rows: [], fileErrors: [msg] }); };
@@ -80,6 +81,7 @@ export default function ImportCSV() {
     setBusy(true); setProgress([0, valid.length]);
     try {
       const r = await admin.importQuestions(valid, (d, t) => setProgress([d, t]));
+      if (course && r.ids.length) { await backend.adminLinkQuestions(course, r.ids); toast(`Added ${r.ids.length} question(s) to ${L.courses.find((c) => c.id === course)?.name}.`); }
       setSummary({ created: r.created.length, failed: [...invalid.map((x) => ({ rowNumber: x.rowNumber, error: x.errors.join(' ') })), ...r.failed], skipped: dups.map((x) => ({ rowNumber: x.rowNumber, error: x.errors.join(' ') })), isDoc });
       toast(`Imported ${r.created.length} question${r.created.length === 1 ? '' : 's'}.`);
       setCsvParsed(null); setDoc(null); setKind(null); setFile(null); if (inputRef.current) inputRef.current.value = '';
@@ -165,6 +167,11 @@ export default function ImportCSV() {
                 </tbody>
               </table>
             </div>
+            {L.courses.length > 0 && (
+              <Field label="Also add to course (for mock tests)" hint="Imported questions join this course's question bank. Leave blank to skip.">
+                <select className="input" value={course} onChange={(e) => setCourse(e.target.value)}><option value="">Don't add to a course</option>{L.courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+              </Field>
+            )}
             <div className="form-actions">
               {progress && <span className="muted small">Importing {progress[0]} / {progress[1]}…</span>}
               <button className="btn btn-primary" disabled={busy || !valid.length} onClick={run}>{busy ? 'Importing…' : `Import ${valid.length} valid question${valid.length === 1 ? '' : 's'}`}</button>

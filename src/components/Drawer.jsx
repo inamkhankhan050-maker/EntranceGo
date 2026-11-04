@@ -100,7 +100,10 @@ export default function Drawer({ open, onClose }) {
             {cat?.exams.map((e) => <NavLink key={e.id} to={`/exams/${e.slug}`} className="dr-link">{e.name}</NavLink>)}
             {cat && <Link to="/exams" className="dr-link dr-all">All exams →</Link>}
           </Group>
+          <NavLink to="/mock-tests" className="dr-row dr-main">Full Mock Tests</NavLink>
           <NavLink to="/practice" className="dr-row dr-main">Practice Sets</NavLink>
+          <NavLink to="/my/mock-tests" className="dr-row dr-main">My Mock Tests</NavLink>
+          <NavLink to="/my/performance" className="dr-row dr-main">My Performance</NavLink>
           <NavLink to="/progress" className="dr-row dr-main">My Progress</NavLink>
           <NavLink to="/search" className="dr-row dr-main"><span className="dr-inline"><Search size={18} /> Search</span></NavLink>
         </nav>

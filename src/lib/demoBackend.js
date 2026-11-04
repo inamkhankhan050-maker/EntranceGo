@@ -168,6 +168,11 @@ export const demo = {
     return delay({ rows: clone(qs.slice((page - 1) * pageSize, page * pageSize)), count: qs.length });
   },
   async adminGet(table, id) { const r = load()[table].find((x) => x.id === id); return delay(r ? clone(r) : null); },
+  // Mock tests need the shared database (secure attempts, per-student history); demo mode only lists nothing.
+  async mockCatalog() { return { courses: [], mocks: [], sections: [], subjects: [] }; },
+  async coursePoolCounts() { return []; },
+  ...Object.fromEntries(['startMock', 'getMockAttempt', 'saveMockAnswer', 'submitMock', 'myMockAttempts', 'myMockAnswers', 'topicsByIds', 'adminMockAttempts', 'adminCourseLinks', 'adminLinkQuestions', 'adminUnlinkQuestions']
+    .map((k) => [k, async () => { throw new Error('Mock tests need the online database. Connect Supabase to use them.'); }])),
 };
 
 // demo accounts

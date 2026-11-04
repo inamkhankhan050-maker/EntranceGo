@@ -173,22 +173,22 @@ export const admin = {
   queryQuestions: (f) => backend.adminQueryQuestions(f),
   // Inserts valid rows in chunks; if a chunk fails, retries rows one by one so each failure gets its own message.
   async importQuestions(rows, onProgress) {
-    const created = [], failed = [];
+    const created = [], failed = [], ids = [];
     for (let i = 0; i < rows.length; i += 50) {
       const chunk = rows.slice(i, i + 50);
       try {
         if (!backend.adminInsertMany) throw new Error('row-by-row');
-        await backend.adminInsertMany('questions', chunk.map((r) => r.data)); // all-or-nothing per chunk
-        created.push(...chunk.map((r) => r.rowNumber));
+        const res = await backend.adminInsertMany('questions', chunk.map((r) => r.data)); // all-or-nothing per chunk
+        created.push(...chunk.map((r) => r.rowNumber)); ids.push(...(res || []).map((x) => x.id));
       } catch {
         for (const r of chunk) {
-          try { await backend.adminInsert('questions', r.data); created.push(r.rowNumber); }
+          try { const row = await backend.adminInsert('questions', r.data); created.push(r.rowNumber); if (row?.id) ids.push(row.id); }
           catch (e) { failed.push({ rowNumber: r.rowNumber, error: e.message }); }
         }
       }
       onProgress?.(Math.min(rows.length, i + 50), rows.length);
     }
     invalidateCatalog();
-    return { created, failed };
+    return { created, failed, ids };
   },
 };

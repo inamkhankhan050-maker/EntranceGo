@@ -14,6 +14,18 @@ import Search from './pages/Search.jsx';
 import Login from './pages/Login.jsx';
 import Progress from './pages/Progress.jsx';
 import { StaticPage, NotFound } from './pages/Static.jsx';
+import { MocksList, MockDetail } from './pages/Mocks.jsx';
+
+const MockAttempt = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockAttempt })));
+const MockResult = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockResult })));
+const MyMockTests = lazy(() => import('./pages/MyMocks.jsx').then((m) => ({ default: m.MyMockTests })));
+const MyPerformance = lazy(() => import('./pages/MyMocks.jsx').then((m) => ({ default: m.MyPerformance })));
+const MockReport = lazy(() => import('./pages/MyMocks.jsx').then((m) => ({ default: m.MockReport })));
+const MyAnalysisReport = lazy(() => import('./pages/MyMocks.jsx').then((m) => ({ default: m.MyAnalysisReport })));
+const CoursesAdmin = lazy(() => import('./admin/Mocks.jsx').then((m) => ({ default: m.CoursesAdmin })));
+const MocksAdmin = lazy(() => import('./admin/Mocks.jsx').then((m) => ({ default: m.MocksAdmin })));
+const MockForm = lazy(() => import('./admin/Mocks.jsx').then((m) => ({ default: m.MockForm })));
+const MockAttemptsAdmin = lazy(() => import('./admin/Mocks.jsx').then((m) => ({ default: m.MockAttemptsAdmin })));
 
 // Admin code is split into its own chunk so students never download it.
 const AdminLayout = lazy(() => import('./admin/common.jsx').then((m) => ({ default: m.AdminLayout })));
@@ -48,9 +60,17 @@ export default function App() {
               <Route path="search" element={<Search />} />
               <Route path="login" element={<Login />} />
               <Route path="progress" element={<Progress />} />
+              <Route path="mock-tests" element={<MocksList />} />
+              <Route path="mock-tests/:slug" element={<MockDetail />} />
+              <Route path="mock/attempt/:id" element={<MockAttempt />} />
+              <Route path="mock/result/:id" element={<MockResult />} />
+              <Route path="my/mock-tests" element={<MyMockTests />} />
+              <Route path="my/performance" element={<MyPerformance />} />
               {['about', 'contact', 'privacy', 'terms', 'disclaimer'].map((p) => <Route key={p} path={p} element={<StaticPage page={p} />} />)}
               <Route path="*" element={<NotFound />} />
             </Route>
+            <Route path="my/report/:id" element={<MockReport />} />
+            <Route path="my/analysis" element={<MyAnalysisReport />} />
             <Route path="admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="subjects" element={<SubjectsAdmin />} />
@@ -64,6 +84,11 @@ export default function App() {
               <Route path="sets/new" element={<SetForm />} />
               <Route path="sets/:id" element={<SetForm />} />
               <Route path="students" element={<StudentsAdmin />} />
+              <Route path="courses" element={<CoursesAdmin />} />
+              <Route path="mocks" element={<MocksAdmin />} />
+              <Route path="mocks/new" element={<MockForm />} />
+              <Route path="mocks/:id" element={<MockForm />} />
+              <Route path="mock-attempts" element={<MockAttemptsAdmin />} />
             </Route>
           </Routes>
         </Suspense>
