@@ -1,5 +1,5 @@
 /* ==========================================================================
-   StudyVeda design system
+   EntranceGo design system
    ========================================================================== */
 :root {
   --navy: #1e1b4b; --indigo: #312e81; --indigo-600: #4338ca; --blue: #2563eb; --blue-50: #eff6ff;
@@ -418,7 +418,7 @@ select.input { padding-right: 2rem; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
-/* ---------- v2: StudyVeda list sections (mobile-first) ---------- */
+/* ---------- v2: EntranceGo list sections (mobile-first) ---------- */
 .sv-section { padding-top: 28px; padding-bottom: 8px; }
 .sv-section + .sv-section { border-top: 1px solid var(--line); }
 .sv-tint { background: var(--bg-tint); padding-bottom: 32px; }
