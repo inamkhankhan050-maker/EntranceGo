@@ -49,7 +49,7 @@ export default function Home() {
     <>
       <section className="sv-hero">
         <div className="container">
-          <h1>Practice MCQs for <span className="grad">Dream University Entrance Exam!</span></h1>
+          <h1>Practice MCQs for <span className="grad">Entrance Exams!</span></h1>
           <p className="sv-hero-lead">Free Mock Tests, Practice MCQs, Answers &amp; Explanations for JMI (Jamia Millia Islamia), AMU (Aligarh Muslim University), DU (University of Delhi), BHU (Banaras Hindu University) and other university entrance exams.</p>
           <p className="sv-hero-tag">Practice Free. Prepare Smart. Get Selected!</p>
           <div className="sv-search-card">
