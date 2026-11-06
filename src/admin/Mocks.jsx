@@ -211,6 +211,10 @@ export function MockForm() {
   const [busy, setBusy] = useState(false);
   const [slugTouched, setSlugTouched] = useState(!!id);
   const busyRef = useRef(false);
+  const draftKey = `eg-mock-draft:${id || 'new'}`;
+  const [restored, setRestored] = useState(false);
+  const initRef = useRef(null);
+  const discardDraft = () => { localStorage.removeItem(draftKey); setRestored(false); reload(); };
 
   useEffect(() => {
     if (!data) return;
@@ -218,8 +222,21 @@ export function MockForm() {
     setF(m ? { ...m, description: m.description || '', instructions: m.instructions || '', max_attempts: m.max_attempts ?? '', available_from: toLocal(m.available_from), available_until: toLocal(m.available_until), useDiff: m.pct_easy != null, pct_easy: m.pct_easy ?? 40, pct_medium: m.pct_medium ?? 40, pct_hard: m.pct_hard ?? 20 }
       : { title: '', slug: '', course_id: data.courses[0]?.id || '', description: '', instructions: '', duration_minutes: 60, marks_per_question: 1, negative_marks: 0, max_attempts: '', available_from: '', available_until: '', prefer_unattempted: true, status: 'draft', useDiff: false, pct_easy: 40, pct_medium: 40, pct_hard: 20 });
     setSecs(m ? data.sections.filter((s) => s.mock_id === id).sort((a, b) => a.position - b.position).map((s) => ({ subject_id: s.subject_id, question_count: s.question_count })) : []);
+    initRef.current = null;
+    // Restore an unsaved draft (kept when the admin goes Back or opens another page before saving).
+    try { const d = JSON.parse(localStorage.getItem(draftKey) || 'null'); if (d?.f) { setF((x) => ({ ...x, ...d.f })); setSecs(d.secs || []); setSlugTouched(!!d.slugTouched); setRestored(true); } } catch { /* ignore a bad draft */ }
   }, [data, id]);
-  useEffect(() => { if (f?.course_id) poolFor(f.course_id).then(setPool).catch(() => setPool({})); }, [f?.course_id]);
+  // Keep the draft on every change, so nothing typed is lost.
+  useEffect(() => {
+    if (!f) return;
+    const snap = JSON.stringify({ f, secs, slugTouched });
+    if (initRef.current === null) { initRef.current = restored ? '' : snap; return; } // first render: the saved values, not a change
+    try { if (snap === initRef.current) localStorage.removeItem(draftKey); else localStorage.setItem(draftKey, snap); } catch { /* storage full or blocked */ }
+  }, [f, secs, slugTouched]);
+  const loadPool = () => { if (f?.course_id) poolFor(f.course_id).then(setPool).catch(() => setPool({})); };
+  useEffect(loadPool, [f?.course_id]);
+  // Re-count when the admin comes back to this tab (e.g. after adding or linking questions elsewhere).
+  useEffect(() => { const h = () => { if (document.visibilityState === 'visible') loadPool(); }; document.addEventListener('visibilitychange', h); window.addEventListener('focus', h); return () => { document.removeEventListener('visibilitychange', h); window.removeEventListener('focus', h); }; });
 
   if (loading || (!f && !error)) return <Loading />;
   if (error) return <ErrorState error={error} onRetry={reload} />;
@@ -257,7 +274,7 @@ export function MockForm() {
       };
       const saved = id ? await admin.update('mock_tests', id, row) : await admin.insert('mock_tests', row);
       await admin.replaceLinks('mock_test_sections', 'mock_id', saved.id, secs.map((s, i) => ({ mock_id: saved.id, subject_id: s.subject_id, question_count: Number(s.question_count), position: i })));
-      toast('Mock test saved.'); nav('/admin/mocks');
+      localStorage.removeItem(draftKey); toast('Mock test saved.'); nav('/admin/mocks');
     } catch (err) { toast(err.message, 'error'); }
     busyRef.current = false; setBusy(false);
   };
@@ -268,6 +285,7 @@ export function MockForm() {
         <Link className="btn btn-ghost" to="/admin/mocks">Back</Link>
         <button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save mock'}</button>
       </AdminHead>
+      {restored && <div className="notice">Your unsaved changes were restored. <button className="link-btn" onClick={discardDraft}>Discard them</button></div>}
       <div className="card form-card">
         <div className="form-row">
           <Field label="Title" required error={errors.title}><input className="input" value={f.title} onChange={(e) => set({ title: e.target.value, ...(slugTouched ? {} : { slug: slugify(e.target.value) }) })} /></Field>
@@ -313,13 +331,13 @@ export function MockForm() {
                 <td><select className="input" value={s.subject_id} onChange={(e) => setSecs(secs.map((x, j) => (j === i ? { ...x, subject_id: e.target.value } : x)))} aria-label="Subject">
                   <option value="">Choose…</option>{data.subjects.map((x) => <option key={x.id} value={x.id} disabled={secs.some((y, j) => j !== i && y.subject_id === x.id)}>{x.name}</option>)}</select></td>
                 <td><input className="input" type="number" min="1" max="500" value={s.question_count} onChange={(e) => setSecs(secs.map((x, j) => (j === i ? { ...x, question_count: e.target.value } : x)))} aria-label="Question count" /></td>
-                <td className={(p?.total || 0) < Number(s.question_count) ? 'err-text small' : 'small'}>{p ? `${p.total} (E ${p.easy} · M ${p.medium} · H ${p.hard})` : s.subject_id ? '0 — link questions in Courses' : ''}</td>
+                <td className={(p?.total || 0) < Number(s.question_count) ? 'err-text small' : 'small'}>{p ? `${p.total} (E ${p.easy} · M ${p.medium} · H ${p.hard})` : s.subject_id ? <>0 in this course · <Link to="/admin/import" target="_blank" rel="noopener">Import {sname(s.subject_id)} questions</Link> or <Link to="/admin/courses" target="_blank" rel="noopener">link them</Link></> : ''}</td>
                 <td><button className="icon-btn danger" aria-label="Remove section" onClick={() => setSecs(secs.filter((_, j) => j !== i))}><X size={16} /></button></td>
               </tr>);
           })}</tbody>
         </table></div>
         <button className="btn btn-outline btn-sm" onClick={() => setSecs([...secs, { subject_id: '', question_count: 10 }])}><Plus size={15} /> Add subject section</button>
-        <p className="muted small">The total is the sum of the sections. A student can start the mock only if every section can be filled from the course's published questions.</p>
+        <p className="muted small"><button className="link-btn" onClick={loadPool}>Refresh counts</button> · The total is the sum of the sections. A student can start the mock only if every section can be filled from the course's published questions.</p>
       </div>
     </>
   );

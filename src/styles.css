@@ -681,3 +681,5 @@ html[data-theme="dark"] .report { background: #fff; color: #0f172a; }
   .report-answers tr, .report .table tr { break-inside: avoid; }
   @page { margin: 14mm; }
 }
+
+.link-btn { background: none; border: 0; padding: 0; color: var(--primary, #4f46e5); font: inherit; text-decoration: underline; cursor: pointer; }
