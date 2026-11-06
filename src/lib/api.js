@@ -1,7 +1,7 @@
 import { BACKEND } from './config.js';
 import { normText } from './text.js';
 
-// The backend module is loaded on demand, so the demo data never ships to a Supabase build and vice versa.
+// Backends load on demand, so each build ships only the one it uses.
 let modPromise;
 const load = () => (modPromise ||= BACKEND === 'supabase'
   ? import('./supabaseBackend.js').then((m) => m.supa)
@@ -171,7 +171,7 @@ export const admin = {
   async remove(t, id) { const r = await backend.adminDelete(t, id); invalidateCatalog(); return r; },
   async replaceLinks(t, key, value, rows) { const r = await backend.replaceLinks(t, key, value, rows); invalidateCatalog(); return r; },
   queryQuestions: (f) => backend.adminQueryQuestions(f),
-  // Inserts valid rows in chunks; if a chunk fails, retries rows one by one so each failure gets its own message.
+  // Insert in chunks; if a chunk fails, retry its rows one by one to report each error.
   async importQuestions(rows, onProgress) {
     const created = [], failed = [], ids = [];
     for (let i = 0; i < rows.length; i += 50) {

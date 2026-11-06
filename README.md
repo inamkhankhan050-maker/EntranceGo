@@ -1,12 +1,17 @@
 # EntranceGo — Learn Smarter. Practice Better.
 
-An original MCQ practice platform: a static React site for **GitHub Pages**, with **Supabase**
-(PostgreSQL + Auth + Row Level Security) as the database and security layer.
+**Live site:** https://entrancego.in
 
-* Public site: 5 categories, 47 subjects, 13 SSC/Railway exams, topic pages, search, practice sets
-* Practice engine: Practice mode (instant feedback + explanation) and Test mode (answers hidden until submit, optional timer), mark for review, question palette, score/accuracy, full review, retry incorrect, saved progress & bookmarks
-* Admin panel at `/admin`: dashboard with live counts, subjects, topics, exams, questions (create / edit / duplicate / preview / publish / unpublish / delete, filters, pagination), CSV bulk import with row-level validation, CSV export, practice-set builder
-* 84 original published sample questions (+2 drafts) across 25 subjects, 6 practice sets
+EntranceGo is an original MCQ practice and mock-test platform for Indian entrance and government exams. It is a static React (Vite) site hosted on **GitHub Pages**, with **Supabase** (PostgreSQL, Auth and Row Level Security) as the database and security layer.
+
+## Features
+
+* **Practice:** categories, subjects, topics, exams, search and practice sets. Practice mode gives instant feedback with explanations; Test mode hides answers until submission and supports a timer, review marks and a question palette.
+* **Mock tests:** course-specific question banks, sectioned mocks with marking and negative marking, difficulty mix, availability windows and attempt limits. Questions are selected per student, unattempted first, with no duplicates. Scoring runs on the server.
+* **Student area:** email sign-up with a mandatory Indian mobile number, My Mock Tests, My Performance (progress chart and subject analysis) and printable PDF reports.
+* **Discussion:** per-question comments for signed-in users.
+* **Admin panel** (`/admin`): subjects, topics, exams, questions (create, edit, duplicate, publish, delete), CSV / Word / PDF bulk import with validation, practice sets, courses, mock tests, attempt statistics, students and anonymous visitor statistics.
+* **Mobile-first UI** with a slide-in menu and dark mode.
 
 > GitHub Pages only serves static files. It does **not** host the database or run any admin
 > logic. All data, sign-in and permissions live in Supabase.
@@ -107,6 +112,10 @@ npm run dev                     # http://localhost:5173
 ```
 supabase/migrations/001_schema.sql   tables, constraints, triggers, views, RLS policies
 supabase/migrations/002_comments.sql per-question discussion (login-only read/post, own/admin delete)
+supabase/migrations/003_student_profiles.sql  mandatory mobile number at sign-up
+supabase/migrations/004_mock_tests.sql        courses, mock tests, secure attempts, server scoring
+supabase/migrations/005_site_visits.sql       anonymous page-view statistics
+supabase/seed_mock.sql, seed_courses.sql      starter courses and mock tests
 supabase/seed.sql                    catalog + sample questions (generated)
 supabase/create_first_admin.sql      grant admin to an existing user
 scripts/seed-data.mjs                source of the catalog + sample questions
@@ -115,6 +124,7 @@ scripts/postbuild.mjs                per-route HTML, 404.html, sitemap, robots
 src/lib/api.js                       data access used by all pages (lazy-loads one backend)
 src/lib/supabaseBackend.js           Supabase queries (anon key + RLS)
 src/lib/demoBackend.js               localStorage backend for demo mode
+src/lib/docImport.js                 Word / PDF question import (runs in the browser)
 src/pages/*                          public pages + practice engine (Play.jsx)
 src/admin/*                          admin panel
 tests/                               unit, database (RLS) and browser tests
@@ -125,8 +135,13 @@ tests/                               unit, database (RLS) and browser tests
 
 ## 7. Known limitations
 
-* Answers for published questions are downloaded with the question so practice works on a static host; a determined user can read them in the browser's network tab. Test-mode scores are computed in the browser and are for self-assessment, not proctored exams. (A server-side scoring function would be the next step if you need that.)
+* In practice and test modes, answers are downloaded with the questions so practice works on a static host, and scores are computed in the browser (self-assessment only). Mock tests do not have this limitation: answers stay on the server until submission and scoring is done in the database.
 * Pre-rendered HTML (titles/descriptions for search engines) is generated from the seed catalog at build time. Content added later in the admin panel works for visitors immediately but is only pre-rendered after you update `scripts/seed-data.mjs` and redeploy; otherwise it is served via `404.html` (HTTP 404 status for crawlers).
 * Page body content is rendered by JavaScript; search engines that don't run JavaScript only see the title/description.
 * Image upload isn't built in — questions take an image **URL** (e.g. from Supabase Storage or any https host).
-* The contact address and legal pages are templates; replace them before launch.
+
+---
+
+## License
+
+Copyright © 2026 Md Inam. All rights reserved. The source is published for reference; reuse requires permission.

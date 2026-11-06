@@ -3,7 +3,7 @@ import { ArrowRight, ChevronRight, Clock, ListChecks, TrainFront, ClipboardList 
 import { SUBJECT_ICONS, tint } from './Icon.jsx';
 import { BookOpen } from 'lucide-react';
 
-// Bright pastel tiles that rotate card by card (bg, icon colour)
+// Pastel tile colours, rotated card by card: [background, icon colour].
 const PASTEL = [['#fde2e4', '#e11d48'], ['#d9f2e6', '#15803d'], ['#dbeafe', '#2563eb'], ['#fef3c7', '#d97706'], ['#ede9fe', '#7c3aed'], ['#cffafe', '#0891b2'], ['#ffedd5', '#ea580c'], ['#e0e7ff', '#4338ca']];
 function Tile({ Icon, tone, k }) {
   const [bg, fg] = tone == null ? tint(k) : PASTEL[tone % PASTEL.length];

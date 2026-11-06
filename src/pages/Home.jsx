@@ -6,7 +6,7 @@ import { SearchBox } from '../components/Layout.jsx';
 import { SubjectCard, ExamCard, SetCard } from '../components/Cards.jsx';
 import { Loading, ErrorState } from '../components/States.jsx';
 
-// Homepage headings and copy per category (original EntranceGo wording).
+// Homepage headings and copy per category.
 const SECTIONS = {
   'competitive-exams': ['Practice MCQs by Subject', 'Core sections of government and private recruitment tests, each with answers and explanations.'],
   'computer-programming': ['Computer & Programming MCQs', 'From computer basics to Python, SQL, data science and cloud.'],

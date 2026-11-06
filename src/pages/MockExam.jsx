@@ -39,7 +39,7 @@ function Exam({ data }) {
   const toast = useToast();
   const qs = data.questions;
   const attemptId = data.attempt.id;
-  // Server clock decides the time limit; correct for any difference with this device's clock.
+  // The server clock sets the time limit; offset for any drift in the device clock.
   const offset = useMemo(() => Date.parse(data.attempt.server_now) - Date.now(), [data]);
   const expires = Date.parse(data.attempt.expires_at);
   const [now, setNow] = useState(Date.now());

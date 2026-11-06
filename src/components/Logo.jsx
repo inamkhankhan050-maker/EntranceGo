@@ -10,7 +10,7 @@ export function LogoMark({ size = 36 }) {
 // Full EntranceGo logo: EG mark + wordmark + "Your Gateway to Success".
 export default function Logo({ to = '/' }) {
   const { pathname } = useLocation();
-  // Already on that page: the router won't navigate, so jump back to the top instead of doing nothing.
+  // Already on the home page: scroll to top, since the router will not navigate.
   const onClick = () => { if (pathname === to) window.scrollTo({ top: 0, behavior: 'smooth' }); };
   return (
     <Link to={to} className="logo" aria-label="EntranceGo home" onClick={onClick}>

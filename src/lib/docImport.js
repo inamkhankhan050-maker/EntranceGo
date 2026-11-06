@@ -302,8 +302,7 @@ export const fileKind = (f) => (/\.csv$/i.test(f.name) || f.type === 'text/csv' 
   : /\.pdf$/i.test(f.name) || f.type === 'application/pdf' ? 'pdf'
   : /\.doc$/i.test(f.name) ? 'doc' : null);
 
-// Phones (Drive, WhatsApp, file managers) sometimes hand over files with no extension or a generic type.
-// Look at the first bytes when the name doesn't tell us.
+// Mobile pickers may supply files without an extension or MIME type; detect the format from the first bytes.
 export async function sniffKind(file) {
   const byName = fileKind(file);
   if (byName) return byName;

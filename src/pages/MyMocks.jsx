@@ -160,8 +160,8 @@ function WeakStrong({ subjects, topics }) {
 }
 
 // ---------------------------------------------------------------- printable reports (Save as PDF)
-// No stored files and no public URLs: each report is built in the browser from data the database
-// returns only to the attempt's owner (or an admin), then printed / saved as PDF.
+// Reports are rendered in the browser from data visible only to the attempt owner or an admin,
+// then printed or saved as PDF. No files are stored and no public URLs exist.
 function usePrint(ready) {
   const [p] = useSearchParams();
   useEffect(() => { if (ready && p.get('print') === '1') { const t = setTimeout(() => window.print(), 600); return () => clearTimeout(t); } return undefined; }, [ready, p]);

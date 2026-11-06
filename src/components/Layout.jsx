@@ -107,7 +107,7 @@ export function ToastProvider({ children }) {
   );
 }
 
-// Anonymous visit counter: a random id kept in this browser, one row per page view (admin pages skipped).
+// Anonymous page-view counter: a random per-browser id, no personal data. Admin pages are skipped.
 function visitorId() {
   try { let v = localStorage.getItem('eg-visitor'); if (!v) { v = (crypto.randomUUID?.() || String(Math.random()).slice(2) + Date.now()); localStorage.setItem('eg-visitor', v); } return v; } catch { return null; }
 }

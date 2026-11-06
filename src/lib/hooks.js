@@ -5,7 +5,7 @@ import { SITE_URL } from './config.js';
 // Async loader with loading / error / reload
 export function useAsync(fn, deps = []) {
   const [state, set] = useState({ loading: true, error: null, data: null });
-  // First load (or a change of deps) shows the loading state; reload() refreshes quietly and keeps the current data on screen.
+  // Initial load shows a spinner; reload() refreshes in the background and keeps current data visible.
   const silent = useRef(false);
   const run = useCallback(() => {
     let alive = true;

@@ -19,7 +19,7 @@ const ok = (n, c, extra = '') => { c ? pass++ : fail++; console.log(`${c ? 'PASS
 const st = existsSync(STATE) ? JSON.parse(readFileSync(STATE, 'utf8')) : {};
 const save = () => writeFileSync(STATE, JSON.stringify(st, null, 2));
 const browser = await chromium.launch();
-// The test sandbox's browser can't reach the internet directly; relay its requests through Node.
+// Relay browser traffic through Node for environments where the browser has no direct network access.
 const newCtx = async (opts = {}) => {
   const c = await browser.newContext(opts);
   await c.route('**/*', async (route) => { try { await route.fulfill({ response: await route.fetch({ timeout: 30000 }) }); } catch { await route.abort().catch(() => {}); } });
@@ -38,8 +38,8 @@ async function register(page, who, name, mobile) {
 }
 
 if (phase === 'register') {
-  st.s1 = st.s1 || { email: 'shekhelias1+egtest1@gmail.com', password: 'Eg-' + randomBytes(9).toString('base64url') };
-  st.s2 = st.s2 || { email: 'shekhelias1+egtest2@gmail.com', password: 'Eg-' + randomBytes(9).toString('base64url') };
+  st.s1 = st.s1 || { email: process.env.EG_TEST_EMAIL_1 || 'student1@example.com', password: 'Eg-' + randomBytes(9).toString('base64url') };
+  st.s2 = st.s2 || { email: process.env.EG_TEST_EMAIL_2 || 'student2@example.com', password: 'Eg-' + randomBytes(9).toString('base64url') };
   save();
   const ctx = await newCtx(); const page = await ctx.newPage();
   // 1. guest opens a B.Ed mock
@@ -81,7 +81,8 @@ if (phase === 'run') {
   const r1 = await sb1.auth.signInWithPassword(st.s1); const r2 = await sb2.auth.signInWithPassword(st.s2);
   ok('4c. both students can sign in (accounts confirmed)', !r1.error && !r2.error, (r1.error || r2.error)?.message);
   const { data: mrow } = await sb1.from('mock_tests').select('id,course_id').eq('slug', MOCK).single();
-  const bedBank = await (async () => {   // the B.Ed question bank = published questions linked to the course (read with the admin-free view the DB allows: course_pool_counts gives counts only)
+  // B.Ed bank size per subject (course_pool_counts exposes counts only).
+  const bedBank = await (async () => {
     const { data } = await sb1.rpc('course_pool_counts', { p_course: mrow.course_id }); return data;
   })();
   const { data: subs } = await sb1.from('mock_test_sections').select('subject_id,question_count').eq('mock_id', mrow.id);
@@ -161,7 +162,7 @@ if (phase === 'run') {
   for (const s of subs) {
     const qs = g2.questions.filter((q) => q.subject_id === s.subject_id);
     const fresh = qs.filter((q) => !first.has(q.id)).length, reused = qs.length - fresh;
-    const unattemptedLeft = pool[s.subject_id] - s.question_count;          // after attempt 1 answered all of its 5
+    const unattemptedLeft = pool[s.subject_id] - s.question_count;          // attempt 1 answered all 5
     const expFresh = Math.min(s.question_count, unattemptedLeft);
     detail.push(`${qs[0]?.subject}: ${fresh} new + ${reused} reused (pool ${pool[s.subject_id]})`);
     if (fresh !== expFresh || reused !== s.question_count - expFresh) policyOk = false;

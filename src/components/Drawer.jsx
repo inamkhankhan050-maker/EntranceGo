@@ -8,7 +8,7 @@ import { getCatalog } from '../lib/api.js';
 import { useTheme } from '../lib/theme.js';
 import { IS_DEMO } from '../lib/config.js';
 
-// Menu groups (original EntranceGo labels) mapped to catalog categories.
+// Menu groups mapped to catalog categories.
 const GROUPS = [
   ['competitive-exams', 'Competitive Exams MCQs'],
   ['computer-programming', 'Computer MCQs'],
@@ -53,7 +53,7 @@ export default function Drawer({ open, onClose }) {
     return c ? cat.subjects.filter((s) => s.category_ids.includes(c.id)) : [];
   };
 
-  // Portal to <body>: the sticky header's backdrop-filter would otherwise trap position:fixed
+  // Render into <body>: the sticky header's backdrop-filter would otherwise trap position: fixed.
   return createPortal(
     <div className={'drawer-root' + (open ? ' is-open' : '')} aria-hidden={!open} {...(open ? {} : { inert: '' })}>
       <div className="drawer-overlay" onClick={onClose} />

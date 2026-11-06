@@ -17,7 +17,7 @@ export default function Login() {
   const auth = useAuth();
   const nav = useNavigate();
   const st = useLocation().state || {};
-  // Where to go after sign-in: the page that sent us here, or the mock a guest picked before confirming their email.
+  // After sign-in, return to the referring page or to the mock the guest selected.
   const from = st.from || peekNext() || '/progress';
   const forMock = st.reason === 'mock' || (peekNext() || '').startsWith('/mock-tests/');
   const [mode, setMode] = useState(st.reason === 'mock' ? 'signup' : 'signin');

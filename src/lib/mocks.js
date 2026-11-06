@@ -1,6 +1,6 @@
 import { backend } from './api.js';
 
-// Remember which mock a guest wanted, so the same mock opens after sign-in (also survives the email-confirmation trip).
+// Remember the mock a guest chose so it reopens after sign-in or email confirmation.
 const NEXT_KEY = 'eg-next-after-login';
 export const rememberNext = (path) => { try { localStorage.setItem(NEXT_KEY, JSON.stringify({ path, at: Date.now() })); } catch { /* private mode */ } };
 export const takeNext = () => {
@@ -47,7 +47,7 @@ export function breakdown(rows, key, names = {}) {
     .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
 }
 
-// Everything the "My Mock Tests" and "My Performance" pages show, for the signed-in student only (RLS).
+// Data for the "My Mock Tests" and "My Performance" pages (signed-in student only, enforced by RLS).
 export async function getMyMockData(userId) {
   const [cat, attempts] = await Promise.all([getMockCatalog(), backend.myMockAttempts(userId)]);
   const submitted = attempts.filter((a) => a.status === 'submitted');

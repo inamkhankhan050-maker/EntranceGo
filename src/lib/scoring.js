@@ -1,4 +1,4 @@
-// Pure scoring. answers: { [questionId]: 'A'|'B'|'C'|'D' }. Each question counts once, whatever happens in the UI.
+// Pure scoring function. answers: { [questionId]: 'A' | 'B' | 'C' | 'D' }. Each question counts once.
 export function computeResult(questions, answers = {}) {
   const ids = new Set();
   let correct = 0, incorrect = 0, unanswered = 0;

@@ -68,7 +68,7 @@ export function MockDetail() {
   const left = m.max_attempts ? Math.max(0, m.max_attempts - used) : null;
 
   const start = async () => {
-    if (!user) {                                     // guest: sign in first, then come straight back here
+    if (!user) {                                     // guests sign in first, then return here
       rememberNext(loc.pathname);
       nav('/login', { state: { from: loc.pathname, reason: 'mock', mockTitle: m.title } });
       return;

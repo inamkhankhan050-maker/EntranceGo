@@ -201,7 +201,7 @@ function Session({ data, source, initialMode }) {
 function Results({ data, round, mode, result, saveState, onRestart }) {
   const [filter, setFilter] = useState('all');
   const [bookmarks, setBookmarks] = useState(null);
-  // Ignore taps for a moment so a double-tap on "Submit" can't hit "Retake all" by accident
+  // Briefly ignore taps so a double-tap on "Submit" cannot trigger "Retake all".
   const [armed, setArmed] = useState(false);
   useEffect(() => { const t = setTimeout(() => setArmed(true), 600); return () => clearTimeout(t); }, []);
   const { user } = useAuth();

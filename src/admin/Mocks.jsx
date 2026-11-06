@@ -223,19 +223,19 @@ export function MockForm() {
       : { title: '', slug: '', course_id: data.courses[0]?.id || '', description: '', instructions: '', duration_minutes: 60, marks_per_question: 1, negative_marks: 0, max_attempts: '', available_from: '', available_until: '', prefer_unattempted: true, status: 'draft', useDiff: false, pct_easy: 40, pct_medium: 40, pct_hard: 20 });
     setSecs(m ? data.sections.filter((s) => s.mock_id === id).sort((a, b) => a.position - b.position).map((s) => ({ subject_id: s.subject_id, question_count: s.question_count })) : []);
     initRef.current = null;
-    // Restore an unsaved draft (kept when the admin goes Back or opens another page before saving).
+    // Restore an unsaved draft left by navigating away before saving.
     try { const d = JSON.parse(localStorage.getItem(draftKey) || 'null'); if (d?.f) { setF((x) => ({ ...x, ...d.f })); setSecs(d.secs || []); setSlugTouched(!!d.slugTouched); setRestored(true); } } catch { /* ignore a bad draft */ }
   }, [data, id]);
   // Keep the draft on every change, so nothing typed is lost.
   useEffect(() => {
     if (!f) return;
     const snap = JSON.stringify({ f, secs, slugTouched });
-    if (initRef.current === null) { initRef.current = restored ? '' : snap; return; } // first render: the saved values, not a change
+    if (initRef.current === null) { initRef.current = restored ? '' : snap; return; } // first render is the baseline, not an edit
     try { if (snap === initRef.current) localStorage.removeItem(draftKey); else localStorage.setItem(draftKey, snap); } catch { /* storage full or blocked */ }
   }, [f, secs, slugTouched]);
   const loadPool = () => { if (f?.course_id) poolFor(f.course_id).then(setPool).catch(() => setPool({})); };
   useEffect(loadPool, [f?.course_id]);
-  // Re-count when the admin comes back to this tab (e.g. after adding or linking questions elsewhere).
+  // Refresh pool counts when the tab regains focus (questions may have been linked elsewhere).
   useEffect(() => { const h = () => { if (document.visibilityState === 'visible') loadPool(); }; document.addEventListener('visibilitychange', h); window.addEventListener('focus', h); return () => { document.removeEventListener('visibilitychange', h); window.removeEventListener('focus', h); }; });
 
   if (loading || (!f && !error)) return <Loading />;
