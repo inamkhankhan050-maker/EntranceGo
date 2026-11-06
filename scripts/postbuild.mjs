@@ -53,7 +53,9 @@ function page(path, title, desc, noindex) {
 }
 routes.forEach(([p, t, d]) => page(p, t, d));
 appRoutes.forEach((p) => page(p, null, null, true));
-writeFileSync(resolve(dist, '404.html'), template);
+// Old links from the github.io/StudyVeda/ days (bookmarks, home-screen shortcuts): send /StudyVeda/... to the same page at the root.
+const legacyRedirect = `<script>(function(){var p=location.pathname;if(/^\\/StudyVeda(\\/|$)/i.test(p)){location.replace((p.replace(/^\\/StudyVeda/i,'')||'/')+location.search+location.hash);}})();</script>`;
+writeFileSync(resolve(dist, '404.html'), (process.env.VITE_BASE_PATH || '/') === '/' ? template.replace('<head>', '<head>\n    ' + legacyRedirect) : template);
 writeFileSync(resolve(dist, '.nojekyll'), '');
 
 const today = new Date().toISOString().slice(0, 10);
