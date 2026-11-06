@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
 
-const BASE = process.env.LIVE_BASE || 'https://inamkhankhan050-maker.github.io/StudyVeda';
+const BASE = process.env.LIVE_BASE || 'https://entrancego.in';
 const STATE = process.env.LIVE_STATE || '/workspace/projects/73393452-873a-4e3a-8f98-ee15397fc2f9/work/live-acceptance-state.json';
 const SB_URL = 'https://cmtxxbmnkbiwfhzytibg.supabase.co';
 const ANON = readFileSync(new URL('../../.github/workflows/deploy.yml', import.meta.url), 'utf8').match(/eyJ[A-Za-z0-9_.-]{100,}/)[0];

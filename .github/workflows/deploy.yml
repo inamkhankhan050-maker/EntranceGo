@@ -21,8 +21,8 @@ jobs:
       # Public values only. Set them in Settings → Secrets and variables → Actions → Variables.
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://cmtxxbmnkbiwfhzytibg.supabase.co' }}
       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdHh4Ym1ua2Jpd2Zoenl0aWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjQxMTYsImV4cCI6MjEwODYwMDExNn0.QoOPyDtok1frg5I3GIdmzJijrTY9KgXizp7vViOQ9AM' }}
-      VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || format('/{0}/', github.event.repository.name) }}
-      VITE_SITE_URL: ${{ vars.VITE_SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+      VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || '/' }}
+      VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://entrancego.in' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
