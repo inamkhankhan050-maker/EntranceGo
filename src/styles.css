@@ -451,7 +451,8 @@ select.input { padding-right: 2rem; }
 .sv-tint { background: #eef2ff !important; }
 .sv-hero { background: linear-gradient(180deg, #e8edfb 0%, #eef2fb 100%); padding: 22px 0 26px; text-align: center; border-bottom: 1px solid #e3e8f4; }
 .sv-hero h1 { font-size: clamp(1.6rem, 1.2rem + 2.4vw, 2.7rem); font-weight: 800; margin: 0 0 .45rem; }
-.sv-hero-lead { color: var(--muted); max-width: 620px; margin: 0 auto 18px; font-size: .98rem; }
+.sv-hero-lead { color: var(--muted); max-width: 680px; margin: 0 auto 8px; font-size: .98rem; }
+.sv-hero-tag { font-weight: 700; color: var(--indigo-600); margin: 0 auto 18px; font-size: 1rem; }
 .sv-search-card { background: #fff; border-radius: 18px; box-shadow: 0 6px 24px rgba(30, 27, 75, .08); padding: 18px 16px 20px; max-width: 680px; margin: 0 auto; }
 .sv-search-card h2 { font-size: 1.12rem; font-weight: 700; margin: 0 0 12px; color: var(--ink); }
 .sv-search-card .searchbox.big { border-radius: 12px; }
