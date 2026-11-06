@@ -3,14 +3,19 @@ import { X } from 'lucide-react';
 
 export function Modal({ title, onClose, children, wide }) {
   const ref = useRef();
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  // Runs once per open. Depending on onClose (a new function each render) re-ran this on every
+  // keystroke and pulled focus off the input being typed in.
   useEffect(() => {
     const prev = document.activeElement;
-    ref.current?.focus();
-    const onKey = (e) => e.key === 'Escape' && onClose();
+    const first = ref.current?.querySelector('input:not([type=hidden]):not([disabled]), textarea, select');
+    (first || ref.current)?.focus();
+    const onKey = (e) => e.key === 'Escape' && closeRef.current();
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; prev?.focus?.(); };
-  }, [onClose]);
+  }, []);
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={'modal' + (wide ? ' wide' : '')} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabIndex={-1} ref={ref}>

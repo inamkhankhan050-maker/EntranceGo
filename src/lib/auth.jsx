@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { backend } from './api.js';
 import { IS_DEMO } from './config.js';
 
@@ -10,8 +10,15 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(IS_DEMO);
   const [adminChecked, setAdminChecked] = useState(IS_DEMO);
 
-  const refreshAdmin = useCallback(async (u) => {
+  const checkedFor = useRef(undefined);
+
+  // Re-check admin only when the signed-in account actually changes. Supabase fires auth events
+  // (token refresh, tab focus) for the same user; re-checking then unmounted admin pages and lost open forms.
+  const refreshAdmin = useCallback(async (u, force = false) => {
     if (IS_DEMO) return;
+    const id = u?.id || null;
+    if (!force && checkedFor.current === id) return;
+    checkedFor.current = id;
     setAdminChecked(false);
     try { setIsAdmin(u ? await backend.isAdmin() : false); } catch { setIsAdmin(false); }
     setAdminChecked(true);
@@ -21,15 +28,15 @@ export function AuthProvider({ children }) {
     let alive = true;
     backend.getUser().then((u) => { if (!alive) return; setUser(u); setReady(true); refreshAdmin(u); })
       .catch(() => { if (alive) { setUser(null); setReady(true); setAdminChecked(true); } });
-    const off = backend.onAuthChange((u) => { setUser(u); refreshAdmin(u); });
+    const off = backend.onAuthChange((u) => { setUser((prev) => (prev && u && prev.id === u.id ? prev : u)); refreshAdmin(u); });
     return () => { alive = false; off(); };
   }, [refreshAdmin]);
 
   const value = {
     user, ready, isAdmin, adminChecked, demo: IS_DEMO,
-    signIn: async (e, p) => { const u = await backend.signIn(e, p); setUser(u); await refreshAdmin(u); return u; },
+    signIn: async (e, p) => { const u = await backend.signIn(e, p); setUser(u); await refreshAdmin(u, true); return u; },
     signUp: async (e, p, n, m) => { const r = await backend.signUp(e, p, n, m); if (r?.session && r.user) setUser(r.user); return r; },
-    signOut: async () => { await backend.signOut(); setUser(null); setIsAdmin(IS_DEMO); },
+    signOut: async () => { await backend.signOut(); checkedFor.current = null; setUser(null); setIsAdmin(IS_DEMO); },
     resetPassword: (e) => backend.resetPassword?.(e),
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
