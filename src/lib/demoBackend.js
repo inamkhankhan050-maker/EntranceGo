@@ -171,6 +171,8 @@ export const demo = {
   // Mock tests need the shared database (secure attempts, per-student history); demo mode only lists nothing.
   async mockCatalog() { return { courses: [], mocks: [], sections: [], subjects: [] }; },
   async coursePoolCounts() { return []; },
+  async trackVisit() {},
+  async visitStats() { throw new Error('Visitor statistics need the online database.'); },
   ...Object.fromEntries(['startMock', 'getMockAttempt', 'saveMockAnswer', 'submitMock', 'myMockAttempts', 'myMockAnswers', 'topicsByIds', 'adminMockAttempts', 'adminCourseLinks', 'adminLinkQuestions', 'adminUnlinkQuestions']
     .map((k) => [k, async () => { throw new Error('Mock tests need the online database. Connect Supabase to use them.'); }])),
 };

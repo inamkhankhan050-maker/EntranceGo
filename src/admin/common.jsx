@@ -1,6 +1,6 @@
 import { useId, isValidElement, cloneElement } from 'react';
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, FolderTree, ListChecks, FileUp, ClipboardList, GraduationCap, Users, ExternalLink, LogOut, Library, Timer, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, FolderTree, ListChecks, FileUp, ClipboardList, GraduationCap, Users, ExternalLink, LogOut, Library, Timer, BarChart3, Eye } from 'lucide-react';
 import { useAuth } from '../lib/auth.jsx';
 import { useMeta } from '../lib/hooks.js';
 import { IS_DEMO } from '../lib/config.js';
@@ -12,7 +12,7 @@ const LINKS = [
   ['/admin', 'Dashboard', LayoutDashboard, true], ['/admin/subjects', 'Subjects', BookOpen], ['/admin/topics', 'Topics', FolderTree],
   ['/admin/questions', 'Questions', ListChecks], ['/admin/import', 'Bulk import', FileUp], ['/admin/sets', 'Practice sets', ClipboardList],
   ['/admin/exams', 'Exams', GraduationCap], ['/admin/courses', 'Courses', Library], ['/admin/mocks', 'Mock tests', Timer],
-  ['/admin/mock-attempts', 'Mock attempts', BarChart3], ['/admin/students', 'Students', Users],
+  ['/admin/mock-attempts', 'Mock attempts', BarChart3], ['/admin/students', 'Students', Users], ['/admin/visitors', 'Visitors', Eye],
 ];
 
 export function AdminLayout() {

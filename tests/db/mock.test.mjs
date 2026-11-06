@@ -26,7 +26,7 @@ await db.exec(`
   grant usage on schema auth to anon, authenticated;
   grant execute on function auth.uid() to anon, authenticated;
 `);
-for (const f of ['migrations/001_schema.sql', 'migrations/002_comments.sql', 'migrations/003_student_profiles.sql', 'seed.sql', 'migrations/004_mock_tests.sql']) await db.exec(mig(f));
+for (const f of ['migrations/001_schema.sql', 'migrations/002_comments.sql', 'migrations/003_student_profiles.sql', 'seed.sql', 'migrations/004_mock_tests.sql', 'migrations/005_site_visits.sql']) await db.exec(mig(f));
 
 const ADMIN = '11111111-1111-1111-1111-111111111111', S1 = '22222222-2222-2222-2222-222222222222', S2 = '33333333-3333-3333-3333-333333333333';
 await db.exec(`
@@ -246,5 +246,21 @@ const SA = (await q(`select start_mock($1) id`, [seedMock]))[0].id;
 const sq = (await q(`select get_mock_attempt($1) j`, [SA]))[0].j.questions;
 ok('B.Ed starter seed loads twice and its mock starts with 5 English + 5 Hindi + 5 Computer', sq.length === 15 && JSON.stringify(Object.values(countBy(sq, (x) => x.subject)).sort()) === '[5,5,5]', JSON.stringify(countBy(sq, (x) => x.subject)));
 
+
+// ---- 005 site visits
+await as('anon');
+ok('visits: guest can log a page view', !(await tryq(`select public.track_visit('guest-abc-123', '/mock-tests')`)).error);
+await tryq(`select public.track_visit('guest-abc-123', '/')`); await tryq(`select public.track_visit('guest-abc-123', '/admin/mocks')`);
+ok('visits: guest cannot read raw visits', !!(await tryq('select * from public.site_visits')).error);
+ok('visits: guest cannot read stats', !!(await tryq('select public.visit_stats()')).error);
+await as('authenticated', S1);
+await tryq(`select public.track_visit('student1-browser', '/')`);
+ok('visits: student cannot read stats', !!(await tryq('select public.visit_stats()')).error);
+ok('visits: student cannot insert directly', !!(await tryq(`insert into public.site_visits (visitor_id, path) values ('x1234567', '/')`)).error);
+await as('authenticated', ADMIN);
+const vs = (await q('select public.visit_stats() s'))[0].s;
+ok('visits: admin stats count today (2 visitors, 3 views, admin page skipped)', vs.today.visitors === 2 && vs.today.views === 3, JSON.stringify(vs.today));
+ok('visits: daily has 30 days, monthly and yearly filled', vs.daily.length === 30 && vs.monthly.length === 1 && vs.yearly.length === 1 && vs.top_pages[0].path === '/');
+await as('postgres');
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

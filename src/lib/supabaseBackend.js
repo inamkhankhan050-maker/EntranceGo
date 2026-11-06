@@ -145,6 +145,8 @@ export const supa = {
     ]).then((rs) => rs.map(unwrap));
     return { courses, mocks, sections, subjects };
   },
+  async trackVisit(visitor, path) { await sb().rpc('track_visit', { p_visitor: visitor, p_path: path }); },
+  async visitStats() { return unwrap(await sb().rpc('visit_stats')); },
   async coursePoolCounts(course_id) { return unwrap(await sb().rpc('course_pool_counts', { p_course: course_id })); },
   async startMock(mock_id) { return unwrap(await sb().rpc('start_mock', { p_mock: mock_id })); },
   async getMockAttempt(id) { return unwrap(await sb().rpc('get_mock_attempt', { p_attempt: id })); },

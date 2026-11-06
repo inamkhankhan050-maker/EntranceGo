@@ -683,3 +683,15 @@ html[data-theme="dark"] .report { background: #fff; color: #0f172a; }
 }
 
 .link-btn { background: none; border: 0; padding: 0; color: var(--primary, #4f46e5); font: inherit; text-decoration: underline; cursor: pointer; }
+
+/* ---------- v6.1: image logo ---------- */
+.logo-img { display: block; height: 46px; width: auto; }
+.logo-mark { display: inline-block; object-fit: contain; }
+@media (max-width: 380px) { .logo-img { height: 38px; } }
+/* On dark backgrounds the navy wordmark needs a light plate. */
+.site-footer .logo, .admin-side .logo, html[data-theme="dark"] .logo { background: #fff; border-radius: 10px; padding: 4px 8px; }
+.visit-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 8px; }
+.visit-bar { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.visit-bar span { display: block; width: 100%; min-height: 2px; background: linear-gradient(180deg, var(--blue, #2563eb), #1e3a8a); border-radius: 3px 3px 0 0; }
+.main-nav a { white-space: nowrap; }
+@media (min-width: 900px) and (max-width: 1240px) { .main-nav a { padding: .5rem .5rem; font-size: .9rem; } .logo-img { height: 40px; } }

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { backend } from '../lib/api.js';
 import { Menu, Search, UserRound } from 'lucide-react';
 import Logo from './Logo.jsx';
 import Drawer from './Drawer.jsx';
@@ -106,9 +107,14 @@ export function ToastProvider({ children }) {
   );
 }
 
+// Anonymous visit counter: a random id kept in this browser, one row per page view (admin pages skipped).
+function visitorId() {
+  try { let v = localStorage.getItem('eg-visitor'); if (!v) { v = (crypto.randomUUID?.() || String(Math.random()).slice(2) + Date.now()); localStorage.setItem('eg-visitor', v); } return v; } catch { return null; }
+}
 export function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { if (pathname.startsWith('/admin') || navigator.webdriver) return; const v = visitorId(); if (v) backend.trackVisit(v, pathname).catch(() => {}); }, [pathname]);
   return null;
 }
 

@@ -38,6 +38,7 @@ const QuestionForm = lazy(() => import('./admin/Questions.jsx').then((m) => ({ d
 const ImportCSV = lazy(() => import('./admin/Import.jsx'));
 const SetsAdmin = lazy(() => import('./admin/Sets.jsx').then((m) => ({ default: m.SetsAdmin })));
 const StudentsAdmin = lazy(() => import('./admin/Students.jsx'));
+const VisitorsAdmin = lazy(() => import('./admin/Visitors.jsx'));
 const SetForm = lazy(() => import('./admin/Sets.jsx').then((m) => ({ default: m.SetForm })));
 
 export default function App() {
@@ -89,6 +90,7 @@ export default function App() {
               <Route path="mocks/new" element={<MockForm />} />
               <Route path="mocks/:id" element={<MockForm />} />
               <Route path="mock-attempts" element={<MockAttemptsAdmin />} />
+              <Route path="visitors" element={<VisitorsAdmin />} />
             </Route>
           </Routes>
         </Suspense>
