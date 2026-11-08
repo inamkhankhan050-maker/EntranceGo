@@ -8,7 +8,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { ToastContext } from '../lib/hooks.js';
 import { IS_DEMO } from '../lib/config.js';
 
-const NAV = [['/subjects', 'Subjects'], ['/exams', 'Exams'], ['/mock-tests', 'Mock Tests'], ['/practice', 'Practice Sets'], ['/my/mock-tests', 'My Mock Tests']];
+const NAV = [['/subjects', 'Subjects'], ['/exams', 'Exams'], ['/mock-tests', 'Mock Tests'], ['/pyq', 'PYQs'], ['/practice', 'Practice Sets'], ['/my/mock-tests', 'My Mock Tests']];
 
 export function SearchBox({ big, autoFocus, initial = '' }) {
   const [q, setQ] = useState(initial);
