@@ -10,11 +10,11 @@ import { IS_DEMO } from '../lib/config.js';
 
 // Menu groups mapped to catalog categories.
 const GROUPS = [
-  ['competitive-exams', 'Competitive Exams MCQs'],
+  ['competitive-exams', 'University Entrance Exams MCQs'],
   ['computer-programming', 'Computer MCQs'],
-  ['engineering-gate', 'Engineering MCQs'],
-  ['graduation-postgraduate', 'Graduation & PG'],
-  ['interview-preparation', 'Interview Q&A'],
+  ['engineering-gate', 'CUET ENTRANCE EXAM MCQs'],
+  ['graduation-postgraduate', 'JMI ENTRANCE EXAM MCQs'],
+  ['interview-preparation', 'AMU ENTRANCE EXAM MCQs'],
 ];
 
 function Group({ id, label, open, onToggle, children }) {
