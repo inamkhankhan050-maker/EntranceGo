@@ -186,6 +186,19 @@ export const supa = {
     return data;
   },
 
+  async uploadPyqFile(file) {
+    const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || '').toLowerCase();
+    const base = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'paper';
+    const path = `${new Date().getFullYear()}/${Date.now()}-${base}${ext}`;
+    const { error } = await sb().storage.from('pyq-files').upload(path, file, { contentType: file.type || undefined, upsert: false });
+    if (error) {
+      if (/bucket not found/i.test(error.message || '')) throw new Error('File storage is not set up yet. Run supabase/migrations/007_pyq_files.sql in the Supabase SQL Editor.');
+      if (/row-level security|unauthori/i.test(error.message || '')) throw new Error('Only an admin can upload files. Sign in with the admin account.');
+      throw friendly(error);
+    }
+    return sb().storage.from('pyq-files').getPublicUrl(path).data.publicUrl;
+  },
+
   // ---------- admin (RLS: admins only) ----------
   async adminSelect(table) {
     const order = { questions: 'updated_at', categories: 'sort_order', subjects: 'sort_order', topics: 'sort_order', exams: 'sort_order', practice_sets: 'updated_at', student_profiles: 'created_at', courses: 'sort_order', mock_tests: 'updated_at', mock_test_sections: 'position', pyq_papers: 'updated_at' }[table];

@@ -128,6 +128,8 @@ export const demo = {
     return delay(clone(load().pyq_papers.filter((p) => p.status === 'published').sort((a, b) => b.year - a.year || a.sort_order - b.sort_order)));
   },
 
+  async uploadPyqFile() { throw new Error('File upload needs the online database. Connect Supabase to use it.'); },
+
   // ---------- admin ----------
   async adminSelect(table) {
     if (table === 'student_profiles') return delay(users().filter((u) => u.phone).map((u) => ({ user_id: u.id, full_name: u.name, email: u.email, phone: u.phone, created_at: u.created_at })));

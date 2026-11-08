@@ -298,6 +298,7 @@ async function pdfToText(buf) {
 
 export const DOC_MAX_BYTES = 10 * 1024 * 1024;
 export const fileKind = (f) => (/\.csv$/i.test(f.name) || f.type === 'text/csv' ? 'csv'
+  : /\.(xlsx|xls|ods)$/i.test(f.name) ? 'xlsx'
   : /\.docx$/i.test(f.name) ? 'docx'
   : /\.pdf$/i.test(f.name) || f.type === 'application/pdf' ? 'pdf'
   : /\.doc$/i.test(f.name) ? 'doc' : null);
@@ -313,6 +314,14 @@ export async function sniffKind(file) {
   if (head[0] === 0xd0 && head[1] === 0xcf) return 'doc';
   if (/^[\x09\x0a\x0d\x20-\x7e\xef\xbb\xbf]*$/.test(str) && /\.?(txt)?$/i.test(file.name) && /,/.test(await file.slice(0, 2000).text())) return 'csv';
   return null;
+}
+
+// Excel / ODS: first sheet converted to CSV text (same columns as the sample CSV).
+export async function sheetToCsv(file) {
+  const XLSX = await import('xlsx');
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  return ws ? XLSX.utils.sheet_to_csv(ws, { blankrows: false }) : '';
 }
 
 /** Read a .docx / .pdf and return { records, warnings, empty } */
