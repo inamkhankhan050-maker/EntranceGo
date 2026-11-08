@@ -703,3 +703,9 @@ html[data-theme="dark"] .report { background: #fff; color: #0f172a; }
 .pyq-f .input { width: 100%; }
 .pyq-q { grid-column: 1 / -1; }
 @media (min-width: 900px) { .pyq-filters { grid-template-columns: repeat(4, 1fr) 1.5fr; } .pyq-q { grid-column: auto; } }
+.pyq-upload { border-top: 1px solid var(--line, #e5e7eb); margin-top: 1rem; padding-top: 1rem; }
+.pyq-upload h2 { font-size: 1.05rem; margin: 0 0 .4rem; }
+.pyq-upload .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin: .6rem 0; }
+.pyq-upload label.btn { cursor: pointer; }
+.pyq-upload label.btn.disabled { opacity: .6; pointer-events: none; }
+.pyq-photo { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line, #e5e7eb); margin: 1rem 0; }
