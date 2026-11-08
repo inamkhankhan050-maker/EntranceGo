@@ -8,6 +8,10 @@ import { Loading, ErrorState, Empty, NotFoundBlock } from '../components/States.
 import { normText, plural } from '../lib/text.js';
 
 const uniq = (arr) => [...new Set(arr.filter(Boolean))];
+// Always offered, even before a paper exists for them.
+const EXAMS = ['JMI', 'AMU', 'CUET', 'BHU', 'DU'];
+const LEVELS = ['School', 'Diploma', 'UG', 'PG'];
+const withDefaults = (defaults, found) => [...defaults, ...uniq(found).filter((x) => !defaults.includes(x)).sort()];
 
 // Previous Year Question papers: filter by Exam > Level (School / UG / PG ...) > Course > Year.
 export function PyqList() {
@@ -23,8 +27,8 @@ export function PyqList() {
   const byCourse = byLevel.filter((p) => !f.course || p.course === f.course);
   const list = byCourse.filter((p) => (!f.year || String(p.year) === f.year)
     && (!f.q || normText(`${p.title} ${p.exam_name} ${p.level} ${p.course} ${p.year}`).includes(normText(f.q))));
-  const exams = useMemo(() => uniq(papers.map((p) => p.exam_name)).sort(), [papers]);
-  const levels = uniq(byExam.map((p) => p.level)).sort();
+  const exams = useMemo(() => withDefaults(EXAMS, papers.map((p) => p.exam_name)), [papers]);
+  const levels = withDefaults(LEVELS, byExam.map((p) => p.level));
   const courses = uniq(byLevel.map((p) => p.course)).sort();
   const years = uniq(byCourse.map((p) => p.year)).sort((a, b) => b - a);
 
@@ -57,10 +61,10 @@ export function PyqList() {
           <input className="input" placeholder="e.g. JMI B.Tech 2024" value={f.q} onChange={(e) => set('q', e.target.value)} /></label>
       </div>
 
-      {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !papers.length ? (
+      {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !papers.length && !f.exam && !f.level ? (
         <Empty title="PYQ papers are coming soon">Previous year papers will appear here once they are published.</Empty>
       ) : !list.length ? (
-        <Empty title="No papers match" action={<button className="btn btn-outline" onClick={() => setParams({}, { replace: true })}>Clear filters</button>}>Try another year or course.</Empty>
+        <Empty title={f.exam ? `No ${f.exam}${f.level ? ` ${f.level}` : ''} papers yet` : 'No papers match'} action={<button className="btn btn-outline" onClick={() => setParams({}, { replace: true })}>Clear filters</button>}>Try another year or course.</Empty>
       ) : (
         <>
           <p className="muted small">{plural(list.length, 'paper')}</p>
