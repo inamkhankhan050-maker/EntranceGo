@@ -25,7 +25,7 @@ const subjById = Object.fromEntries(subjects.map((s) => [s.id, s]));
 const routes = [
   ['/', null, null],
   ['/subjects', 'All Subjects', 'Browse every EntranceGo subject: competitive exams, programming, engineering, university subjects and interview preparation.'],
-  ['/exams', 'Competitive Examinations', 'Practice questions for SSC and Railway exams.'],
+  ['/exams', 'University Entrance Exams', 'Practice questions for SSC and Railway exams.'],
   ['/practice', 'Practice Sets', 'Ready-made MCQ practice sets and timed mini mocks.'],
   ['/mock-tests', 'Full Mock Tests', 'Full-length timed mock tests for B.Ed, SSC, Railway and other entrance exams, with subject-wise results and downloadable reports.'],
   ['/about', 'About EntranceGo', 'EntranceGo is a free MCQ practice platform.'],
