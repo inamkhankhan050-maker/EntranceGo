@@ -66,7 +66,7 @@ function Footer() {
         </div>
         <div>
           <h2 className="footer-h">Popular</h2>
-          <Link to="/subjects/aptitude">Aptitude</Link><Link to="/subjects/english">English</Link><Link to="/subjects/python">Python</Link><Link to="/exams/ssc-cgl">SSC CGL</Link>
+          <Link to="/subjects/aptitude">Aptitude</Link><Link to="/subjects/english">English</Link>
         </div>
         <div>
           <h2 className="footer-h">EntranceGo</h2>
