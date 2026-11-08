@@ -18,7 +18,7 @@ export function SearchBox({ big, autoFocus, initial = '' }) {
     <form role="search" className={'searchbox' + (big ? ' big' : '')} onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/search?q=${encodeURIComponent(q.trim())}`); }}>
       <label htmlFor={big ? 'search-big' : 'search-nav'} className="sr-only">Search subjects, topics, exams and questions</label>
       <input id={big ? 'search-big' : 'search-nav'} type="search" value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus}
-        placeholder={big ? 'Search subjects, topics, exams or any question…' : 'Search…'} minLength={2} />
+        placeholder={big ? 'Search subjects, topics, exams, PYQs or any question…' : 'Search…'} minLength={2} />
       <button type="submit" aria-label="Search"><Search size={big ? 20 : 17} /></button>
     </form>
   );
