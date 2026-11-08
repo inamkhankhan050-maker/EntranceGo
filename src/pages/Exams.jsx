@@ -8,7 +8,7 @@ import { Loading, ErrorState, Empty, NotFoundBlock } from '../components/States.
 import { plural } from '../lib/text.js';
 
 export function Exams() {
-  useMeta('Competitive Examinations', 'Practice questions for SSC (CGL, CHSL, MTS, CPO, JE, GD) and Railway (RRB NTPC, Group D, ALP, Technician, Section Controller) exams.');
+  useMeta('University Entrance Exams', 'Practice questions for SSC (CGL, CHSL, MTS, CPO, JE, GD) and Railway (RRB NTPC, Group D, ALP, Technician, Section Controller) exams.');
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
   if (loading) return <Loading />;
   if (error) return <div className="container section"><ErrorState error={error} onRetry={reload} /></div>;
@@ -16,7 +16,7 @@ export function Exams() {
   return (
     <div className="container section">
       <Breadcrumbs items={[{ label: 'Exams' }]} />
-      <header className="page-head"><h1>Competitive examinations</h1><p className="muted">Questions tagged to each exam's pattern. EntranceGo is independent and not affiliated with any conducting body.</p></header>
+      <header className="page-head"><h1>University Entrance Exams</h1><p className="muted">Questions tagged to each exam's pattern. EntranceGo is independent and not affiliated with any conducting body.</p></header>
       {groups.map((g) => (
         <section key={g} className="cat-block">
           <h2>{g === 'SSC' ? 'SSC Exams' : g === 'Railway' ? 'Railway Exams' : g}</h2>

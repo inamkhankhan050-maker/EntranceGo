@@ -10,9 +10,9 @@ import { Loading, ErrorState } from '../components/States.jsx';
 const SECTIONS = {
   'competitive-exams': ['Practice MCQs by Subject', 'Core sections of government and private recruitment tests, each with answers and explanations.'],
   'computer-programming': ['Computer & Programming MCQs', 'From computer basics to Python, SQL, data science and cloud.'],
-  'engineering-gate': ['Engineering & GATE MCQs', 'Branch-wise engineering subjects plus maths, physics and chemistry for GATE.'],
-  'graduation-postgraduate': ['Graduation & Postgraduate MCQs', 'University-level subjects for UG and PG students and entrance tests.'],
-  'interview-preparation': ['Interview Questions & Answers', 'Get ready for HR, banking and technical interview rounds.'],
+  'engineering-gate': ['CUET ENTRANCE EXAM MCQs', 'Practice Smart with Subject-wise MCQs for CUET UG & PG Entrance Exams.'],
+  'graduation-postgraduate': ['JMI ENTRANCE EXAM MCQs', 'Practice Smart for Class 6, 9, 11, Diploma, UG & PG Entrance Exams at Jamia Millia Islamia.'],
+  'interview-preparation': ['BHU ENTRANCE EXAM MCQs', 'Practice Smart for UG & PG Entrance Exams at Banaras Hindu University.'],
 };
 
 function SectionHead({ id, title, sub }) {
@@ -50,7 +50,7 @@ export default function Home() {
       <section className="sv-hero">
         <div className="container">
           <h1>Practice MCQs for <span className="grad">Entrance Exams!</span></h1>
-          <p className="sv-hero-lead">Free Mock Tests, Practice MCQs, Answers &amp; Explanations for JMI (Jamia Millia Islamia), AMU (Aligarh Muslim University), DU (University of Delhi), BHU (Banaras Hindu University) and other university entrance exams.</p>
+          <p className="sv-hero-lead">Free Mock Tests, Practice MCQs, Answers &amp; Detailed Explanations for JMI (Jamia Millia Islamia), AMU (Aligarh Muslim University), CUET (Common University Entrance Test), DU (University of Delhi), BHU (Banaras Hindu University) and other university entrance exams. Prepare smarter, practise better and achieve your goals!</p>
           <p className="sv-hero-tag">Practice Free. Prepare Smart. Get Selected!</p>
           <div className="sv-search-card">
             <h2>Search MCQs, Topics &amp; Exams</h2>
@@ -71,7 +71,7 @@ export default function Home() {
 
           <section className="section sv-section" aria-labelledby="h-exams">
             <div className="container">
-              <SectionHead id="h-exams" title="Competitive Exam Preparation" sub="SSC and Railway practice organised by exam. Independent, not affiliated with any exam body." />
+              <SectionHead id="h-exams" title="AMU ENTRANCE EXAM MCQs" sub="Practice Smart for Class 6, 9, 11, Diploma, UG & PG Entrance Exams at Aligarh Muslim University." />
               <div className="sv-grid">{c.exams.map((e, i) => <ExamCard key={e.id} e={e} tone={i} simple />)}</div>
             </div>
           </section>
