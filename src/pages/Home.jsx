@@ -53,7 +53,7 @@ export default function Home() {
           <p className="sv-hero-lead">Free Mock Tests, Practice MCQs, Answers &amp; Detailed Explanations for JMI (Jamia Millia Islamia), AMU (Aligarh Muslim University), CUET (Common University Entrance Test), DU (University of Delhi), BHU (Banaras Hindu University) and other university entrance exams. Prepare smarter, practise better and achieve your goals!</p>
           <p className="sv-hero-tag">Practice Free. Prepare Smart. Get Selected!</p>
           <div className="sv-search-card">
-            <h2>Search MCQs, Topics &amp; Exams</h2>
+            <h2>Search MCQs, PYQs, Topics &amp; Exams</h2>
             <SearchBox big />
           </div>
           <div className="action-row center">
