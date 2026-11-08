@@ -26,13 +26,13 @@ const text = () => page.locator('main, .admin-content').first().innerText();
 await step('homepage', async () => {
   await go('/');
   ok('homepage loads with hero heading', (await page.locator('h1').innerText()).includes('Practice MCQs for'));
-  for (const h of ['Practice MCQs by Subject', 'Computer & Programming MCQs', 'Engineering & GATE MCQs', 'Graduation & Postgraduate MCQs', 'Competitive Exam Preparation', 'Interview Questions & Answers', 'Featured Practice Sets'])
+  for (const h of ['Practice MCQs by Subject', 'Computer & Programming MCQs', 'CUET ENTRANCE EXAM MCQs', 'JMI ENTRANCE EXAM MCQs', 'AMU ENTRANCE EXAM MCQs', 'BHU ENTRANCE EXAM MCQs', 'Featured Practice Sets'])
     ok(`homepage section: ${h}`, await page.getByRole('heading', { name: h, exact: true }).count() === 1);
   const homeSubj = await page.locator('.sv-grid .subject-card:not(.exam-row)').count();
   const homeExam = await page.locator('.sv-grid .exam-row').count();
   ok('homepage shows every subject card (47 + Computer Fundamentals in 2 sections) and all 13 exams', homeSubj === 48 && homeExam === 13, `subjects=${homeSubj} exams=${homeExam}`);
   const order = await page.locator('.sv-head h2').allInnerTexts();
-  ok('homepage section order', order.indexOf('Competitive Exam Preparation') < order.indexOf('Interview Questions & Answers') && order[0] === 'Practice MCQs by Subject', order.join(' | '));
+  ok('homepage section order', order.indexOf('AMU ENTRANCE EXAM MCQs') < order.indexOf('BHU ENTRANCE EXAM MCQs') && order[0] === 'Practice MCQs by Subject', order.join(' | '));
   const soon = await page.locator('.sv-grid .subject-card', { hasText: 'Mining Engineering' }).innerText();
   ok('homepage card shows no fake count', !/\d+ questions?/.test(soon), soon.replace(/\n/g, ' / '));
   await page.locator('.sv-grid .subject-card', { hasText: 'Mining Engineering' }).click();
@@ -50,7 +50,7 @@ await step('homepage', async () => {
   const cards = await page.locator('.subject-card').count();
   ok('All subjects page lists the catalog (Computer Fundamentals appears in 2 categories)', cards === 48, `cards=${cards}`);
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Exams' }).click();
-  ok('header nav → Exams', (await page.locator('h1').innerText()).includes('Competitive examinations'));
+  ok('header nav → Exams', (await page.locator('h1').innerText()).includes('University Entrance Exams'));
 });
 
 // ---------------------------------------------------------------- 2. direct access & refresh on nested URLs
