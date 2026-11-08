@@ -2,6 +2,7 @@
   "name": "entrancego",
   "private": true,
   "version": "1.0.0",
+  "description": "MCQ practice, mock tests and previous-year papers for Indian entrance and government exams",
   "type": "module",
   "scripts": {
     "dev": "vite",
