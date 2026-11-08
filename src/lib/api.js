@@ -18,6 +18,14 @@ export const backend = new Proxy({}, {
 let catalogPromise = null;
 export function invalidateCatalog() { catalogPromise = null; }
 
+// Public display names for categories (overrides the database names by slug).
+export const CATEGORY_LABELS = {
+  'competitive-exams': 'University Entrance Exams',
+  'engineering-gate': 'CUET ENTRANCE EXAM',
+  'graduation-postgraduate': 'JMI ENTRANCE EXAM',
+  'interview-preparation': 'AMU ENTRANCE EXAM',
+};
+
 export function getCatalog() {
   if (!catalogPromise) {
     catalogPromise = backend.loadCatalog().then((c) => {
@@ -38,7 +46,7 @@ export function getCatalog() {
         const links = c.set_questions.filter((x) => x.set_id === p.id).sort((a, b) => a.position - b.position);
         return { ...p, question_ids: links.map((x) => x.question_id), question_count: links.length, subject: subjectById[p.subject_id], exam: examById[p.exam_id] };
       });
-      return { categories: c.categories, subjects, topics, exams, sets, subjectById, examById };
+      return { categories: c.categories.map((k) => (CATEGORY_LABELS[k.slug] ? { ...k, name: CATEGORY_LABELS[k.slug] } : k)), subjects, topics, exams, sets, subjectById, examById };
     }).catch((e) => { catalogPromise = null; throw e; });
   }
   return catalogPromise;
