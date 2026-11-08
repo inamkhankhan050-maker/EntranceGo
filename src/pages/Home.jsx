@@ -59,6 +59,7 @@ export default function Home() {
           <div className="action-row center">
             <Link to="/practice" className="btn btn-primary btn-lg sv-start">Start Practicing <ArrowRight size={18} /></Link>
             <Link to="/mock-tests" className="btn btn-outline btn-lg sv-start">Full Mock Tests <ArrowRight size={18} /></Link>
+            <Link to="/pyq" className="btn btn-outline btn-lg sv-start">PYQ Papers <ArrowRight size={18} /></Link>
           </div>
         </div>
       </section>
