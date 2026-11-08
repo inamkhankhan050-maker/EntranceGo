@@ -15,6 +15,7 @@ import Login from './pages/Login.jsx';
 import Progress from './pages/Progress.jsx';
 import { StaticPage, NotFound } from './pages/Static.jsx';
 import { MocksList, MockDetail } from './pages/Mocks.jsx';
+import { PyqList, PyqDetail } from './pages/Pyq.jsx';
 
 const MockAttempt = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockAttempt })));
 const MockResult = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockResult })));
@@ -39,6 +40,8 @@ const ImportCSV = lazy(() => import('./admin/Import.jsx'));
 const SetsAdmin = lazy(() => import('./admin/Sets.jsx').then((m) => ({ default: m.SetsAdmin })));
 const StudentsAdmin = lazy(() => import('./admin/Students.jsx'));
 const VisitorsAdmin = lazy(() => import('./admin/Visitors.jsx'));
+const PyqAdmin = lazy(() => import('./admin/Pyq.jsx').then((m) => ({ default: m.PyqAdmin })));
+const PyqForm = lazy(() => import('./admin/Pyq.jsx').then((m) => ({ default: m.PyqForm })));
 const SetForm = lazy(() => import('./admin/Sets.jsx').then((m) => ({ default: m.SetForm })));
 
 export default function App() {
@@ -63,6 +66,8 @@ export default function App() {
               <Route path="progress" element={<Progress />} />
               <Route path="mock-tests" element={<MocksList />} />
               <Route path="mock-tests/:slug" element={<MockDetail />} />
+              <Route path="pyq" element={<PyqList />} />
+              <Route path="pyq/:slug" element={<PyqDetail />} />
               <Route path="mock/attempt/:id" element={<MockAttempt />} />
               <Route path="mock/result/:id" element={<MockResult />} />
               <Route path="my/mock-tests" element={<MyMockTests />} />
@@ -84,6 +89,9 @@ export default function App() {
               <Route path="sets" element={<SetsAdmin />} />
               <Route path="sets/new" element={<SetForm />} />
               <Route path="sets/:id" element={<SetForm />} />
+              <Route path="pyq" element={<PyqAdmin />} />
+              <Route path="pyq/new" element={<PyqForm />} />
+              <Route path="pyq/:id" element={<PyqForm />} />
               <Route path="students" element={<StudentsAdmin />} />
               <Route path="courses" element={<CoursesAdmin />} />
               <Route path="mocks" element={<MocksAdmin />} />
