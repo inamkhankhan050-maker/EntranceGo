@@ -142,6 +142,16 @@ export async function getRecentQuestions(n = 5) {
   return qs.map((q) => ({ ...q, subject: c.subjectById[q.subject_id], topic: c.topics.find((t) => t.id === q.topic_id) }));
 }
 
+// ---------------- PYQ papers ----------------
+export async function getPyqs() {
+  const [papers, c] = await Promise.all([backend.pyqPapers(), getCatalog()]);
+  const setById = Object.fromEntries(c.sets.map((s) => [s.id, s]));
+  return papers.map((p) => ({ ...p, set: p.set_id ? setById[p.set_id] || null : null }));
+}
+export async function getPyqPage(slug) {
+  return (await getPyqs()).find((p) => p.slug === slug) || null;
+}
+
 // ---------------- admin ----------------
 export const admin = {
   async lookups() {

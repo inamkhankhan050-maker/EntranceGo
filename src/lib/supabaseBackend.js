@@ -179,9 +179,16 @@ export const supa = {
     return true;
   },
 
+  // ---------- PYQ papers (RLS: published only for students) ----------
+  async pyqPapers() {
+    const { data, error } = await sb().from('pyq_papers').select('*').eq('status', 'published').order('year', { ascending: false }).order('sort_order');
+    if (error) { if (/pyq_papers|does not exist|schema cache/i.test(error.message || '')) return []; throw friendly(error); }
+    return data;
+  },
+
   // ---------- admin (RLS: admins only) ----------
   async adminSelect(table) {
-    const order = { questions: 'updated_at', categories: 'sort_order', subjects: 'sort_order', topics: 'sort_order', exams: 'sort_order', practice_sets: 'updated_at', student_profiles: 'created_at', courses: 'sort_order', mock_tests: 'updated_at', mock_test_sections: 'position' }[table];
+    const order = { questions: 'updated_at', categories: 'sort_order', subjects: 'sort_order', topics: 'sort_order', exams: 'sort_order', practice_sets: 'updated_at', student_profiles: 'created_at', courses: 'sort_order', mock_tests: 'updated_at', mock_test_sections: 'position', pyq_papers: 'updated_at' }[table];
     return fetchAll(() => { const q = sb().from(table).select(table === 'questions' ? QCOLS : '*'); return order ? q.order(order) : q; });
   },
   async adminInsert(table, row) { return unwrap(await sb().from(table).insert(row).select().single()); },

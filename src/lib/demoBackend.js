@@ -16,6 +16,7 @@ function load() {
   try { db = JSON.parse(localStorage.getItem(KEY)); } catch { db = null; }
   if (!db || !db.subjects) db = { ...clone(seed), attempts: [], bookmarks: [] };
   db.comments ||= [];
+  db.pyq_papers ||= [];
   return db;
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { /* storage full */ } }
@@ -123,6 +124,10 @@ export const demo = {
     d.comments = d.comments.filter((x) => x.id !== id); save(); return delay(true);
   },
 
+  async pyqPapers() {
+    return delay(clone(load().pyq_papers.filter((p) => p.status === 'published').sort((a, b) => b.year - a.year || a.sort_order - b.sort_order)));
+  },
+
   // ---------- admin ----------
   async adminSelect(table) {
     if (table === 'student_profiles') return delay(users().filter((u) => u.phone).map((u) => ({ user_id: u.id, full_name: u.name, email: u.email, phone: u.phone, created_at: u.created_at })));
@@ -149,7 +154,7 @@ export const demo = {
     d[table] = d[table].filter((x) => x.id !== id);
     if (table === 'subjects') d.subject_categories = d.subject_categories.filter((x) => x.subject_id !== id);
     if (table === 'questions') { d.practice_set_questions = d.practice_set_questions.filter((x) => x.question_id !== id); d.bookmarks = d.bookmarks.filter((b) => b.question_id !== id); }
-    if (table === 'practice_sets') d.practice_set_questions = d.practice_set_questions.filter((x) => x.set_id !== id);
+    if (table === 'practice_sets') { d.practice_set_questions = d.practice_set_questions.filter((x) => x.set_id !== id); d.pyq_papers.forEach((p) => { if (p.set_id === id) p.set_id = null; }); }
     if (table === 'exams') d.questions.forEach((q) => { if (q.exam_id === id) q.exam_id = null; });
     save(); return delay(true);
   },
@@ -192,7 +197,7 @@ async function hashPw(email, pw) {
 // mirrors the SQL constraints
 function checkRow(d, table, r, selfId) {
   const others = d[table].filter((x) => x.id !== selfId);
-  if (['subjects', 'exams', 'practice_sets', 'categories'].includes(table) && others.some((x) => x.slug === r.slug))
+  if (['subjects', 'exams', 'practice_sets', 'categories', 'pyq_papers'].includes(table) && others.some((x) => x.slug === r.slug))
     fail(`The slug "${r.slug}" is already used. Choose another.`, '23505');
   if (table === 'topics' && others.some((x) => x.subject_id === r.subject_id && x.slug === r.slug))
     fail(`This subject already has a topic with slug "${r.slug}".`, '23505');
