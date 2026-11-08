@@ -1,27 +1,48 @@
 import { useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Download, Upload, CheckCircle2, XCircle, MinusCircle, FileText } from 'lucide-react';
 import { admin, backend } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
 import { parseQuestionCSV, buildImportRows, SAMPLE_CSV, CSV_COLUMNS, REQUIRED_COLUMNS, downloadText } from '../lib/csv.js';
-import { extractQuestions, sniffKind, DOC_SAMPLE, DOC_MAX_BYTES } from '../lib/docImport.js';
+import { extractQuestions, sniffKind, sheetToCsv, DOC_SAMPLE, DOC_MAX_BYTES } from '../lib/docImport.js';
+import { normText } from '../lib/text.js';
 import { AdminHead, Field } from './common.jsx';
 import { Loading, ErrorState } from '../components/States.jsx';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
+// Puts question ids into the PYQ paper's practice set (created on first import), keeping existing ones first.
+async function attachToPaper(paper, ids) {
+  let setId = paper.set_id;
+  const [sets, links] = await Promise.all([admin.select('practice_sets'), admin.select('practice_set_questions')]);
+  if (!setId || !sets.some((s) => s.id === setId)) {
+    let slug = `pyq-${paper.slug}`.slice(0, 80); let n = 2;
+    while (sets.some((s) => s.slug === slug)) slug = `pyq-${paper.slug}-${n++}`.slice(0, 80);
+    const set = await admin.insert('practice_sets', { title: paper.title, slug, description: `Previous year paper: ${paper.exam_name} ${paper.level} ${paper.course} ${paper.year}`, subject_id: null, exam_id: null, time_limit_minutes: null, status: 'published' });
+    setId = set.id;
+    await admin.update('pyq_papers', paper.id, { set_id: setId });
+    paper.set_id = setId;
+  }
+  const have = links.filter((x) => x.set_id === setId).sort((a, b) => a.position - b.position).map((x) => x.question_id);
+  const all = [...have, ...ids.filter((x) => !have.includes(x))];
+  await admin.replaceLinks('practice_set_questions', 'set_id', setId, all.map((question_id, position) => ({ set_id: setId, question_id, position })));
+  return all.length - have.length;
+}
+
 export default function ImportCSV() {
   const toast = useToast();
+  const [params] = useSearchParams();
+  const pyqId = params.get('pyq') || '';   // importing straight into a PYQ paper
   const { data: L, loading, error, reload } = useAsync(async () => {
-    const [l, qs, courses] = await Promise.all([admin.lookups(), admin.select('questions'), admin.select('courses').catch(() => [])]);
-    return { ...l, courses, existing: qs.map((q) => ({ subject_id: q.subject_id, question: q.question })) };
-  }, []);
+    const [l, qs, courses, papers] = await Promise.all([admin.lookups(), admin.select('questions'), admin.select('courses').catch(() => []), pyqId ? admin.select('pyq_papers') : []]);
+    return { ...l, courses, paper: papers.find((p) => p.id === pyqId) || null, existing: qs.map((q) => ({ id: q.id, subject_id: q.subject_id, question: q.question })) };
+  }, [pyqId]);
   const [file, setFile] = useState(null);
   const [kind, setKind] = useState(null);
   const [csvParsed, setCsvParsed] = useState(null);
   const [doc, setDoc] = useState(null); // { records, fileErrors }
   const [reading, setReading] = useState(false);
-  const [opts, setOpts] = useState({ subject: '', topic: '', exam: '', difficulty: 'medium', status: 'draft' });
+  const [opts, setOpts] = useState({ subject: '', topic: '', exam: '', difficulty: 'medium', status: pyqId ? 'published' : 'draft' });
   const setOpt = (k, v) => setOpts((o) => ({ ...o, [k]: v, ...(k === 'subject' ? { topic: '' } : {}) }));
   const [view, setView] = useState('all');
   const [busy, setBusy] = useState(false);
@@ -37,10 +58,12 @@ export default function ImportCSV() {
     if (!f) return;
     const k = await sniffKind(f);
     if (k === 'doc') return fail('Old Word (.doc) files are not supported. In Word, use Save As → Word Document (.docx) and upload that.');
-    if (!k) return fail('Please choose a CSV, Word (.docx) or PDF file.');
-    if (k === 'csv') {
+    if (!k) return fail('Please choose an Excel (.xlsx), CSV, Word (.docx) or PDF file.');
+    if (k === 'csv' || k === 'xlsx') {
       if (f.size > MAX_BYTES) return fail('File is larger than 5 MB. Split it into smaller files.');
-      setKind('csv'); setCsvParsed(parseQuestionCSV(await f.text(), L)); return;
+      let text;
+      try { text = k === 'xlsx' ? await sheetToCsv(f) : await f.text(); } catch (e) { return fail(`Could not read this Excel file (${e.message || 'unknown error'}).`); }
+      setKind('csv'); setCsvParsed(parseQuestionCSV(text, L)); return;
     }
     if (f.size > DOC_MAX_BYTES) return fail('File is larger than 10 MB. Split it into smaller files.');
     setReading(true);
@@ -82,6 +105,16 @@ export default function ImportCSV() {
     try {
       const r = await admin.importQuestions(valid, (d, t) => setProgress([d, t]));
       if (course && r.ids.length) { await backend.adminLinkQuestions(course, r.ids); toast(`Added ${r.ids.length} question(s) to ${L.courses.find((c) => c.id === course)?.name}.`); }
+      if (L.paper) {
+        // New questions plus ones already in the bank (duplicates), in file order, go into the paper's practice set.
+        const key = (d) => d.subject_id + '|' + normText(d.question);
+        const idByKey = new Map(L.existing.map((q) => [key(q), q.id]));
+        const byRow = new Map(valid.map((x) => [x.rowNumber, x]));
+        r.created.forEach((rowNumber, i) => { const row = byRow.get(rowNumber); if (row && r.ids[i]) idByKey.set(key(row.data), r.ids[i]); });
+        const ordered = [...valid, ...dups].sort((a, b) => a.rowNumber - b.rowNumber).map((x) => idByKey.get(key(x.data))).filter(Boolean);
+        const n = await attachToPaper(L.paper, [...new Set(ordered)]);
+        toast(`${n} question${n === 1 ? '' : 's'} added to “${L.paper.title}”.`);
+      }
       setSummary({ created: r.created.length, failed: [...invalid.map((x) => ({ rowNumber: x.rowNumber, error: x.errors.join(' ') })), ...r.failed], skipped: dups.map((x) => ({ rowNumber: x.rowNumber, error: x.errors.join(' ') })), isDoc });
       toast(`Imported ${r.created.length} question${r.created.length === 1 ? '' : 's'}.`);
       setCsvParsed(null); setDoc(null); setKind(null); setFile(null); if (inputRef.current) inputRef.current.value = '';
@@ -95,7 +128,10 @@ export default function ImportCSV() {
 
   return (
     <>
-      <AdminHead title="Bulk import" sub="Add many questions at once from a CSV, Word (.docx) or PDF file. Nothing is saved until you confirm.">
+      {pyqId && (L.paper
+        ? <div className="notice">Uploading questions for PYQ paper <strong>{L.paper.title}</strong>. After import they are added to this paper automatically, in file order. <Link to={`/admin/pyq/${L.paper.id}`}>Back to the paper</Link></div>
+        : <div className="notice err">That PYQ paper was not found. <Link to="/admin/pyq">Back to PYQ papers</Link></div>)}
+      <AdminHead title={L.paper ? 'Upload PYQ questions' : 'Bulk import'} sub="Add many questions at once from an Excel (.xlsx), CSV, Word (.docx) or PDF file. Nothing is saved until you confirm.">
         <button className="btn btn-outline" onClick={() => downloadText('entrancego-sample.csv', SAMPLE_CSV)}><Download size={17} /> Sample CSV</button>
       </AdminHead>
 
@@ -123,7 +159,7 @@ export default function ImportCSV() {
         <h2>2. Upload and check</h2>
         <label className="dropzone">
           <Upload size={22} aria-hidden="true" />
-          <span>{reading ? 'Reading file…' : file ? file.name : 'Choose a CSV, Word or PDF file'}</span>
+          <span>{reading ? 'Reading file…' : file ? file.name : 'Choose an Excel, CSV, Word or PDF file'}</span>
           <input ref={inputRef} type="file" onChange={(e) => onFile(e.target.files[0])} disabled={reading} />
         </label>
         {isDoc && doc?.records.length > 0 && (
@@ -192,7 +228,7 @@ export default function ImportCSV() {
           {[...summary.failed, ...summary.skipped].length > 0 && (
             <ul className="small bullets">{[...summary.failed, ...summary.skipped].sort((a, b) => a.rowNumber - b.rowNumber).map((f) => <li key={f.rowNumber}><strong>{summary.isDoc ? 'Question' : 'Row'} {f.rowNumber}:</strong> {f.error}</li>)}</ul>
           )}
-          <Link className="btn btn-outline" to="/admin/questions">View questions</Link>
+          {L.paper ? <Link className="btn btn-primary" to={`/admin/pyq/${L.paper.id}`}>Back to the paper</Link> : <Link className="btn btn-outline" to="/admin/questions">View questions</Link>}
         </section>
       )}
     </>

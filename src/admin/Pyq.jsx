@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Archive, ExternalLink } from 'lucide-react';
-import { admin } from '../lib/api.js';
+import { Plus, Pencil, Trash2, Archive, Upload, FileUp, X } from 'lucide-react';
+import { admin, backend } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
 import { slugify, normText, isSlug } from '../lib/text.js';
 import { AdminHead, Field, StatusBadge } from './common.jsx';
@@ -101,7 +101,9 @@ export function PyqForm() {
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
   const [slugTouched, setSlugTouched] = useState(!!id);
+  const [uploading, setUploading] = useState(false);
   const busyRef = useRef(false);
+  const fileRef = useRef();
 
   useEffect(() => {
     if (!data) return;
@@ -150,9 +152,8 @@ export function PyqForm() {
         description: form.description.trim() || null, set_id: form.set_id || null, pdf_url: form.pdf_url.trim() || null,
         status: form.status, sort_order: Number.isInteger(sort) ? sort : 0,
       };
-      if (id) await admin.update('pyq_papers', id, row); else await admin.insert('pyq_papers', row);
-      toast('PYQ paper saved.');
-      nav('/admin/pyq');
+      if (id) { await admin.update('pyq_papers', id, row); toast('PYQ paper saved.'); nav('/admin/pyq'); }
+      else { const saved = await admin.insert('pyq_papers', row); toast('Paper saved. Now upload its questions.'); nav(`/admin/pyq/${saved.id}`, { replace: true }); }
     } catch (err) { toast(err.message, 'error'); }
     busyRef.current = false; setBusy(false);
   };
@@ -185,21 +186,49 @@ export function PyqForm() {
             <input className="input mono" value={form.slug} onChange={(e) => { setSlugTouched(true); setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() })); }} /></Field>
         </div>
         <Field label="Description"><textarea className="input" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
-        <div className="form-row">
-          <Field label="Questions (practice set)" error={errors.set_id} hint="The paper's questions in order. Students can practise it or take it as a timed test.">
+        <section className="pyq-upload">
+          <h2>Questions</h2>
+          {id ? (
+            <>
+              <p className="small">Upload the paper's questions from an <strong>Excel (.xlsx)</strong>, CSV, Word (.docx) or PDF file. They are added to this paper in the same order.
+                {chosen ? ` This paper has ${qCount(chosen.id)} question${qCount(chosen.id) === 1 ? '' : 's'} now.` : ''}</p>
+              <div className="action-row">
+                <Link className="btn btn-primary" to={`/admin/import?pyq=${id}`}><FileUp size={17} /> Upload questions</Link>
+                {chosen && <Link className="btn btn-outline" to={`/admin/sets/${chosen.id}`}>Edit / reorder questions</Link>}
+              </div>
+            </>
+          ) : <p className="notice">Fill in the details above and click <strong>Save paper</strong>. Then you can upload its questions (Excel, CSV, Word or PDF).</p>}
+          <Field label="Or use an existing practice set" error={errors.set_id}>
             <select className="input" value={form.set_id} onChange={(e) => set({ set_id: e.target.value })}>
               <option value="">None</option>
               {data.sets.map((s) => <option key={s.id} value={s.id}>{s.title} ({qCount(s.id)} q{s.status !== 'published' ? `, ${s.status}` : ''})</option>)}
             </select>
           </Field>
-          <Field label="Question paper PDF link" error={errors.pdf_url} hint="Optional. A public link (Google Drive, etc.)">
+          {chosen && chosen.status !== 'published' && <p className="notice">The selected practice set is {chosen.status}. Publish it so students can attempt the questions.</p>}
+        </section>
+
+        <section className="pyq-upload">
+          <h2>Question paper file (PDF / photo)</h2>
+          <p className="small muted">Optional. Students can open or download it from the paper page.</p>
+          <div className="action-row">
+            <label className={'btn btn-outline' + (uploading ? ' disabled' : '')}>
+              <Upload size={17} /> {uploading ? 'Uploading…' : form.pdf_url ? 'Replace file' : 'Upload PDF or photo'}
+              <input ref={fileRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" hidden disabled={uploading} onChange={async (e) => {
+                const f = e.target.files[0]; if (fileRef.current) fileRef.current.value = '';
+                if (!f) return;
+                if (f.size > 20 * 1024 * 1024) { toast('File is larger than 20 MB. Compress it and try again.', 'error'); return; }
+                setUploading(true);
+                try { const url = await backend.uploadPyqFile(f); set({ pdf_url: url }); toast('File uploaded. Click Save paper to keep it.'); } catch (err) { toast(err.message, 'error'); }
+                setUploading(false);
+              }} />
+            </label>
+            {form.pdf_url && <a className="btn btn-ghost" href={form.pdf_url} target="_blank" rel="noopener noreferrer">Open file</a>}
+            {form.pdf_url && <button className="btn btn-ghost" onClick={() => set({ pdf_url: '' })}><X size={16} /> Remove</button>}
+          </div>
+          <Field label="Or paste a link" error={errors.pdf_url} hint="Google Drive or any public link">
             <input className="input" placeholder="https://" value={form.pdf_url} onChange={(e) => set({ pdf_url: e.target.value })} /></Field>
-        </div>
-        {chosen && chosen.status !== 'published' && <p className="notice">The selected practice set is {chosen.status}. Publish it so students can attempt the questions.</p>}
-        <p className="muted small">
-          To add this paper's questions: import them in <Link to="/admin/import">Bulk import</Link> or <Link to="/admin/questions/new">add them one by one</Link>,
-          then put them in a <Link to="/admin/sets/new">new practice set <ExternalLink size={12} /></Link> and choose that set here.
-        </p>
+        </section>
+
         <div className="form-row">
           <Field label="Status"><select className="input" value={form.status} onChange={(e) => set({ status: e.target.value })}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></Field>
           <Field label="Sort order" hint="Lower shows first within the same year"><input className="input" type="number" value={form.sort_order} onChange={(e) => set({ sort_order: e.target.value })} /></Field>
