@@ -28,6 +28,7 @@ const routes = [
   ['/exams', 'University Entrance Exams', 'Practice questions for SSC and Railway exams.'],
   ['/practice', 'Practice Sets', 'Ready-made MCQ practice sets and timed mini mocks.'],
   ['/mock-tests', 'Full Mock Tests', 'Full-length timed mock tests for B.Ed, SSC, Railway and other entrance exams, with subject-wise results and downloadable reports.'],
+  ['/pyq', 'Previous Year Question Papers (PYQs)', 'Previous year question papers for JMI, AMU, CUET, BHU, DU and other entrance exams, by level, course and year.'],
   ['/about', 'About EntranceGo', 'EntranceGo is a free MCQ practice platform.'],
   ['/contact', 'Contact', 'Contact the EntranceGo team.'],
   ['/privacy', 'Privacy Policy', 'How EntranceGo handles your data.'],
@@ -39,7 +40,7 @@ const routes = [
   ...seed.practice_sets.filter(pub).map((p) => [`/practice/${p.slug}`, p.title, p.description || p.title]),
 ];
 // no-index app routes still need a file so refresh works
-const appRoutes = ['/search', '/login', '/progress', '/play', '/admin', '/admin/subjects', '/admin/topics', '/admin/questions', '/admin/questions/new', '/admin/import', '/admin/sets', '/admin/sets/new', '/admin/exams', '/admin/students', '/admin/courses', '/admin/mocks', '/admin/mocks/new', '/admin/mock-attempts', '/admin/visitors', '/my/mock-tests', '/my/performance', '/my/analysis'];
+const appRoutes = ['/search', '/login', '/progress', '/play', '/admin', '/admin/subjects', '/admin/topics', '/admin/questions', '/admin/questions/new', '/admin/import', '/admin/sets', '/admin/sets/new', '/admin/exams', '/admin/students', '/admin/courses', '/admin/mocks', '/admin/mocks/new', '/admin/mock-attempts', '/admin/visitors', '/admin/pyq', '/admin/pyq/new', '/my/mock-tests', '/my/performance', '/my/analysis'];
 
 function page(path, title, desc, noindex) {
   let html = template;
