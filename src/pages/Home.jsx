@@ -29,7 +29,7 @@ export default function Home() {
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
   const cats = c ? c.categories.filter((cat) => cat.slug !== 'interview-preparation') : [];
   const interview = c?.categories.find((cat) => cat.slug === 'interview-preparation');
-  const sets = c ? c.sets.filter((p) => p.question_count).slice(0, 6) : [];
+  const sets = c ? c.sets.filter((p) => p.question_count && !p.slug.startsWith('pyq-')).slice(0, 6) : [];
 
   const catSection = (cat) => {
     const list = c.subjects.filter((s) => s.category_ids.includes(cat.id));

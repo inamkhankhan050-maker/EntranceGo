@@ -122,9 +122,10 @@ export function PyqDetail() {
             </Link>
           </div>
         ) : !p.pdf_url && <Empty title="Questions for this paper are coming soon" />}
+        {p.pdf_url && /\.(jpe?g|png|webp)(\?|$)/i.test(p.pdf_url) && <img className="pyq-photo" src={p.pdf_url} alt={`${p.title} question paper`} loading="lazy" />}
         {p.pdf_url && (
           <div className="action-row">
-            <a className="btn btn-outline" href={p.pdf_url} target="_blank" rel="noopener noreferrer"><FileText size={17} /> View question paper (PDF)</a>
+            <a className="btn btn-outline" href={p.pdf_url} target="_blank" rel="noopener noreferrer"><FileText size={17} /> View question paper{/\.pdf(\?|$)/i.test(p.pdf_url) ? ' (PDF)' : ''}</a>
           </div>
         )}
       </div>

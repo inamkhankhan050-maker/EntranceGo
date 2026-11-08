@@ -12,7 +12,7 @@ export function Sets() {
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
   if (loading) return <Loading />;
   if (error) return <div className="container section"><ErrorState error={error} onRetry={reload} /></div>;
-  const sets = c.sets.filter((p) => p.question_count);
+  const sets = c.sets.filter((p) => p.question_count && !p.slug.startsWith('pyq-'));   // PYQ papers have their own page
   return (
     <div className="container section">
       <Breadcrumbs items={[{ label: 'Practice Sets' }]} />
