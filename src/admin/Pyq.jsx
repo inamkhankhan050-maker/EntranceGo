@@ -225,8 +225,8 @@ export function PyqForm() {
             {form.pdf_url && <a className="btn btn-ghost" href={form.pdf_url} target="_blank" rel="noopener noreferrer">Open file</a>}
             {form.pdf_url && <button className="btn btn-ghost" onClick={() => set({ pdf_url: '' })}><X size={16} /> Remove</button>}
           </div>
-          <Field label="Or paste a link" error={errors.pdf_url} hint="Google Drive or any public link">
-            <input className="input" placeholder="https://" value={form.pdf_url} onChange={(e) => set({ pdf_url: e.target.value })} /></Field>
+          <Field label="Or paste a Google Drive link" error={errors.pdf_url} hint="In Drive: Share → General access: Anyone with the link → Copy link. Any other public link works too.">
+            <input className="input" placeholder="https://drive.google.com/…" value={form.pdf_url} onChange={(e) => set({ pdf_url: e.target.value })} /></Field>
         </section>
 
         <div className="form-row">
