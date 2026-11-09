@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Archive, Eye, EyeOff } from 'lucide-react';
-import { admin } from '../lib/api.js';
+import { admin, CATEGORY_LABELS } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
 import { slugify, normText } from '../lib/text.js';
 import { validateSlugged } from '../lib/validate.js';
@@ -13,7 +13,9 @@ import { SubjectIcon, ICON_NAMES } from '../components/Icon.jsx';
 function useCatalogAdmin() {
   return useAsync(async () => {
     const [l, counts] = await Promise.all([admin.lookups(), admin.counts()]);
-    return { ...l, counts };
+    // Show the same category names as the public site (renamed by slug in api.js)
+    const categories = (l.categories || []).map((k) => (CATEGORY_LABELS[k.slug] ? { ...k, name: CATEGORY_LABELS[k.slug] } : k));
+    return { ...l, categories, counts };
   }, []);
 }
 
