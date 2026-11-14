@@ -31,7 +31,7 @@ export function MocksList() {
   );
 }
 
-function MockCard({ m }) {
+export function MockCard({ m }) {
   const av = availability(m);
   return (
     <Link to={`/mock-tests/${m.slug}`} className="card mock-card">

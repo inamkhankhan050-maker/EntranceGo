@@ -129,6 +129,12 @@ export function PyqDetail() {
           </div>
         )}
       </div>
+      {p.years?.length > 0 && (
+        <section className="card start-card">
+          <h2 className="h4">Other years: {p.exam_name} {p.course}</h2>
+          <div className="pyq-years">{p.years.map((x) => <Link key={x.id} className="chip" to={`/pyq/${x.slug}`}><CalendarDays size={14} /> {x.year}</Link>)}</div>
+        </section>
+      )}
     </div>
   );
 }

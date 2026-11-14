@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getCatalog } from '../lib/api.js';
 import { useAsync, useMeta } from '../lib/hooks.js';
-import { SubjectCard } from '../components/Cards.jsx';
+import { SubjectCard, CourseCard } from '../components/Cards.jsx';
 import Breadcrumbs from '../components/Breadcrumbs.jsx';
 import { Loading, ErrorState, Empty } from '../components/States.jsx';
 import { normText } from '../lib/text.js';
 
 export default function Subjects() {
-  useMeta('All Subjects', 'Browse every EntranceGo subject: competitive exams, computer and programming, engineering and GATE, graduation and postgraduate, and interview preparation.');
+  useMeta('All Subjects', 'Browse every EntranceGo subject: competitive exams, engineering and GATE, graduation and postgraduate, and interview preparation.');
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
   const [filter, setFilter] = useState('');
   const { hash } = useLocation();
@@ -32,12 +32,13 @@ export default function Subjects() {
       {loading && <Loading />}
       {error && <ErrorState error={error} onRetry={reload} />}
       {c && c.categories.map((cat) => {
+        const courses = c.courses.filter((k) => k.category_id === cat.id && (!f || normText(k.name).includes(f)));
         const list = c.subjects.filter((s) => s.category_ids.includes(cat.id) && (!f || normText(s.name).includes(f)));
-        if (!list.length) return null;
+        if (!list.length && !courses.length) return null;
         return (
           <section key={cat.id} id={cat.slug} className="cat-block">
-            <h2>{cat.name} <span className="count">{list.length}</span></h2>
-            <div className="sv-grid">{list.map((s) => <SubjectCard key={s.id} s={s} />)}</div>
+            <h2>{cat.name} <span className="count">{list.length + courses.length}</span></h2>
+            <div className="sv-grid">{courses.map((k) => <CourseCard key={k.id} k={k} />)}{list.map((s) => <SubjectCard key={s.id} s={s} />)}</div>
           </section>
         );
       })}
