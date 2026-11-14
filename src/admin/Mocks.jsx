@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Plus, Pencil, Trash2, X, ExternalLink, Eye } from 'lucide-react';
-import { admin, backend } from '../lib/api.js';
+import { admin, backend, CATEGORY_LABELS } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
 import { slugify, isSlug, cap } from '../lib/text.js';
 import { breakdown, fmtMarks, pct, fmtDateTime } from '../lib/mocks.js';
@@ -23,44 +23,49 @@ async function poolFor(course_id) {
 export function CoursesAdmin() {
   const toast = useToast();
   const { data, loading, error, reload } = useAsync(async () => {
-    const [courses, mocks, l] = await Promise.all([admin.select('courses'), admin.select('mock_tests'), admin.lookups()]);
+    const [courses, mocks, l, links] = await Promise.all([admin.select('courses'), admin.select('mock_tests'), admin.lookups(), admin.select('course_subjects').then((r) => ({ rows: r, ok: true }), () => ({ rows: [], ok: false }))]);
     const pools = Object.fromEntries(await Promise.all(courses.map(async (c) => [c.id, await poolFor(c.id)])));
-    return { courses, mocks, pools, ...l };
+    return { courses, mocks, pools, courseSubjects: links.rows, has008: links.ok, ...l };
   }, []);
   const [edit, setEdit] = useState(null);
   const [bank, setBank] = useState(null);
   const [del, setDel] = useState(null);
   const [busy, setBusy] = useState(false);
   const name = (id) => data?.subjects.find((s) => s.id === id)?.name || 'Unknown';
+  const blank = { name: '', slug: '', description: '', status: 'published', category_id: '', subject_ids: [] };
+  const catName = (id) => { const k = data?.categories.find((x) => x.id === id); return k ? CATEGORY_LABELS[k.slug] || k.name : '—'; };
+  const openEdit = (c) => setEdit({ ...c, description: c.description || '', category_id: c.category_id || '', subject_ids: data.courseSubjects.filter((x) => x.course_id === c.id).sort((a, b) => a.position - b.position).map((x) => x.subject_id) });
 
   return (
     <>
-      <AdminHead title="Courses" sub="A course has its own question bank. Mock tests only ever use questions linked to their course.">
-        <button className="btn btn-primary" onClick={() => setEdit({ name: '', slug: '', description: '', status: 'draft' })}><Plus size={17} /> New course</button>
+      <AdminHead title="Courses" sub="Category > Course > Subjects. A course (e.g. BA Political Science) sits inside a category (e.g. JMI ENTRANCE EXAM) and has its own subjects. Questions of those subjects are added to the course automatically, so mock tests can use them.">
+        <button className="btn btn-primary" onClick={() => setEdit(blank)}><Plus size={17} /> New course</button>
       </AdminHead>
+      {data && !data.has008 && <div className="notice">To put courses inside categories, run <code>supabase/migrations/008_course_catalog.sql</code> in Supabase SQL Editor once, then reload.</div>}
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data.courses.length ? (
-        <Empty title="No courses yet" action={<button className="btn btn-primary" onClick={() => setEdit({ name: '', slug: '', description: '', status: 'draft' })}>Create a course</button>}>Create a course such as “B.Ed Entrance” or “SSC CGL”, then link questions to it.</Empty>
+        <Empty title="No courses yet" action={<button className="btn btn-primary" onClick={() => setEdit(blank)}>Create a course</button>}>Create a course such as “BA Political Science”, choose its category and subjects.</Empty>
       ) : (
         <div className="table-wrap"><table className="table">
-          <thead><tr><th>Course</th><th>Published questions by subject</th><th>Mocks</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
+          <thead><tr><th>Course</th><th>Category</th><th>Published questions by subject</th><th>Mocks</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>{data.courses.map((c) => {
             const p = data.pools[c.id] || {};
             return (
               <tr key={c.id}>
-                <td><strong>{c.name}</strong><div className="muted small mono">{c.slug}</div></td>
+                <td><strong>{c.name}</strong><div className="muted small mono">/courses/{c.slug}</div></td>
+                <td className="small">{catName(c.category_id)}</td>
                 <td className="small">{Object.keys(p).length ? Object.entries(p).map(([sid, v]) => `${name(sid)} ${v.total}`).join(' · ') : <span className="muted">No questions linked</span>}</td>
                 <td>{data.mocks.filter((m) => m.course_id === c.id).length}</td>
                 <td><StatusBadge s={c.status} /></td>
                 <td className="row-actions">
                   <button className="btn btn-outline btn-sm" onClick={() => setBank(c)}>Question bank</button>
-                  <button className="icon-btn" aria-label={`Edit ${c.name}`} onClick={() => setEdit({ ...c, description: c.description || '' })}><Pencil size={16} /></button>
+                  <button className="icon-btn" aria-label={`Edit ${c.name}`} onClick={() => openEdit(c)}><Pencil size={16} /></button>
                   <button className="icon-btn danger" aria-label={`Delete ${c.name}`} onClick={() => setDel(c)}><Trash2 size={16} /></button>
                 </td>
               </tr>);
           })}</tbody>
         </table></div>
       )}
-      {edit && <CourseForm course={edit} courses={data.courses} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); reload(); }} />}
+      {edit && <CourseForm course={edit} courses={data.courses} lookups={data} has008={data.has008} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); reload(); }} />}
       {bank && <CourseBank course={bank} lookups={data} onClose={() => { setBank(null); reload(); }} />}
       {del && (
         <Confirm title={`Delete “${del.name}”?`} busy={busy} onClose={() => setDel(null)} onConfirm={async () => {
@@ -71,7 +76,7 @@ export function CoursesAdmin() {
   );
 }
 
-function CourseForm({ course, courses, onClose, onSaved }) {
+function CourseForm({ course, courses, lookups, has008, onClose, onSaved }) {
   const toast = useToast();
   const [f, setF] = useState(course);
   const [touched, setTouched] = useState(!!course.id);
@@ -81,8 +86,10 @@ function CourseForm({ course, courses, onClose, onSaved }) {
     if (err) { toast(err, 'error'); return; }
     setBusy(true);
     try {
-      const row = { name: f.name.trim(), slug: f.slug, description: f.description.trim() || null, status: f.status };
-      if (f.id) await admin.update('courses', f.id, row); else await admin.insert('courses', row);
+      const row = { name: f.name.trim(), slug: f.slug, description: f.description.trim() || null, status: f.status, ...(has008 ? { category_id: f.category_id || null } : {}) };
+      const saved = f.id ? await admin.update('courses', f.id, row) : await admin.insert('courses', row);
+      const cid = f.id || saved?.id || (Array.isArray(saved) ? saved[0]?.id : null);
+      if (has008 && cid) await admin.replaceLinks('course_subjects', 'course_id', cid, f.subject_ids.map((subject_id, position) => ({ course_id: cid, subject_id, position })));
       toast('Course saved.'); onSaved();
     } catch (e) { toast(e.message, 'error'); setBusy(false); }
   };
@@ -90,6 +97,15 @@ function CourseForm({ course, courses, onClose, onSaved }) {
     <Modal title={f.id ? 'Edit course' : 'New course'} onClose={onClose}>
       <Field label="Name" required><input className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value, ...(touched ? {} : { slug: slugify(e.target.value) }) })} /></Field>
       <Field label="Slug" required><input className="input mono" value={f.slug} onChange={(e) => { setTouched(true); setF({ ...f, slug: e.target.value.toLowerCase() }); }} /></Field>
+      {has008 && (<>
+        <Field label="Category" hint="The home page shows this course inside this category."><select className="input" value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
+          <option value="">None</option>{lookups.categories.filter((k) => k.slug !== 'computer-programming').map((k) => <option key={k.id} value={k.id}>{CATEGORY_LABELS[k.slug] || k.name}</option>)}</select></Field>
+        <Field label="Subjects in this course" hint="All questions of the ticked subjects are added to this course's question bank, now and in future.">
+          <div className="check-grid">{lookups.subjects.filter((s) => s.status !== 'archived').map((s) => (
+            <label key={s.id} className="check small"><input type="checkbox" checked={f.subject_ids.includes(s.id)} onChange={(e) => setF({ ...f, subject_ids: e.target.checked ? [...f.subject_ids, s.id] : f.subject_ids.filter((x) => x !== s.id) })} /> <span>{s.name}</span></label>
+          ))}</div>
+        </Field>
+      </>)}
       <Field label="Description"><textarea className="input" rows={2} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
       <Field label="Status"><select className="input" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></Field>
       {err && <p className="err-text small">{err}</p>}
@@ -201,9 +217,10 @@ export function MockForm() {
   const nav = useNavigate();
   const toast = useToast();
   const { data, loading, error, reload } = useAsync(async () => {
-    const [mocks, sections, courses, l] = await Promise.all([admin.select('mock_tests'), admin.select('mock_test_sections'), admin.select('courses'), admin.lookups()]);
-    return { mocks, sections, courses, ...l };
+    const [mocks, sections, courses, l, questions] = await Promise.all([admin.select('mock_tests'), admin.select('mock_test_sections'), admin.select('courses'), admin.lookups(), admin.select('questions')]);
+    return { mocks, sections, courses, questions, ...l };
   }, [id]);
+  const [linking, setLinking] = useState('');
   const [f, setF] = useState(null);
   const [secs, setSecs] = useState([]);
   const [pool, setPool] = useState({});
@@ -245,6 +262,15 @@ export function MockForm() {
   const total = secs.reduce((n, s) => n + (Number(s.question_count) || 0), 0);
   const short = secs.filter((s) => (pool[s.subject_id]?.total || 0) < Number(s.question_count));
   const sname = (sid) => data.subjects.find((s) => s.id === sid)?.name || '?';
+  const subjPublished = (sid) => data.questions.filter((q) => q.subject_id === sid && q.status === 'published');
+  const linkAll = async (sid) => {
+    const ids = data.questions.filter((q) => q.subject_id === sid).map((q) => q.id);
+    if (!ids.length) { toast(`${sname(sid)} has no questions yet. Import them first.`, 'error'); return; }
+    setLinking(sid);
+    try { await backend.adminLinkQuestions(f.course_id, ids); toast(`${ids.length} ${sname(sid)} question(s) added to this course.`); loadPool(); }
+    catch (err) { toast(err.message, 'error'); }
+    setLinking('');
+  };
 
   const save = async () => {
     if (busyRef.current) return;
@@ -331,7 +357,13 @@ export function MockForm() {
                 <td><select className="input" value={s.subject_id} onChange={(e) => setSecs(secs.map((x, j) => (j === i ? { ...x, subject_id: e.target.value } : x)))} aria-label="Subject">
                   <option value="">Choose…</option>{data.subjects.map((x) => <option key={x.id} value={x.id} disabled={secs.some((y, j) => j !== i && y.subject_id === x.id)}>{x.name}</option>)}</select></td>
                 <td><input className="input" type="number" min="1" max="500" value={s.question_count} onChange={(e) => setSecs(secs.map((x, j) => (j === i ? { ...x, question_count: e.target.value } : x)))} aria-label="Question count" /></td>
-                <td className={(p?.total || 0) < Number(s.question_count) ? 'err-text small' : 'small'}>{p ? `${p.total} (E ${p.easy} · M ${p.medium} · H ${p.hard})` : s.subject_id ? <>0 in this course · <Link to="/admin/import" target="_blank" rel="noopener">Import {sname(s.subject_id)} questions</Link> or <Link to="/admin/courses" target="_blank" rel="noopener">link them</Link></> : ''}</td>
+                <td className={(p?.total || 0) < Number(s.question_count) ? 'err-text small' : 'small'}>
+                  {p ? `${p.total} (E ${p.easy} · M ${p.medium} · H ${p.hard})` : s.subject_id ? '0 in this course' : ''}
+                  {s.subject_id && (p?.total || 0) < subjPublished(s.subject_id).length && (
+                    <div><button type="button" className="btn btn-outline btn-sm" disabled={linking === s.subject_id} onClick={() => linkAll(s.subject_id)}>
+                      {linking === s.subject_id ? 'Adding…' : `Add all ${subjPublished(s.subject_id).length} ${sname(s.subject_id)} questions to this course`}</button></div>)}
+                  {s.subject_id && !subjPublished(s.subject_id).length && <> · <Link to="/admin/import" target="_blank" rel="noopener">Import {sname(s.subject_id)} questions</Link></>}
+                </td>
                 <td><button className="icon-btn danger" aria-label="Remove section" onClick={() => setSecs(secs.filter((_, j) => j !== i))}><X size={16} /></button></td>
               </tr>);
           })}</tbody>

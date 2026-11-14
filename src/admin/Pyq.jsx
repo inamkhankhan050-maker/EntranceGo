@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Archive, Upload, FileUp, X } from 'lucide-react';
 import { admin, backend } from '../lib/api.js';
 import { useAsync, useToast } from '../lib/hooks.js';
@@ -91,12 +91,14 @@ export function PyqAdmin() {
 
 export function PyqForm() {
   const { id } = useParams();
+  const [params] = useSearchParams();
+  const copyFrom = !id ? params.get('copy') : null;
   const nav = useNavigate();
   const toast = useToast();
   const { data, loading, error, reload } = useAsync(async () => {
     const [papers, sets, links] = await Promise.all([admin.select('pyq_papers'), admin.select('practice_sets'), admin.select('practice_set_questions')]);
     return { papers, sets, links };
-  }, [id]);
+  }, [id, copyFrom]);
   const [form, setForm] = useState(null);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
@@ -108,6 +110,15 @@ export function PyqForm() {
   useEffect(() => {
     if (!data) return;
     const p = id && data.papers.find((x) => x.id === id);
+    const src = copyFrom && data.papers.find((x) => x.id === copyFrom);
+    if (src) {
+      // "Add another year": same exam, level and course; next missing year before the existing ones.
+      const used = new Set(data.papers.filter((x) => x.exam_name === src.exam_name && normText(x.course) === normText(src.course)).map((x) => x.year));
+      let y = src.year - 1; while (used.has(y) && y > 1950) y--;
+      setSlugTouched(false);
+      setForm({ title: '', slug: slugify([src.exam_name, src.course, y, 'Question Paper'].join(' ')), exam_name: src.exam_name, level: src.level, course: src.course, year: String(y), description: '', set_id: '', pdf_url: '', status: 'draft', sort_order: '0' });
+      return;
+    }
     setForm(p ? { ...p, description: p.description || '', set_id: p.set_id || '', pdf_url: p.pdf_url || '', year: String(p.year), sort_order: String(p.sort_order ?? 0) }
       : { title: '', slug: '', exam_name: '', level: '', course: '', year: String(new Date().getFullYear() - 1), description: '', set_id: '', pdf_url: '', status: 'draft', sort_order: '0' });
   }, [data, id]);
@@ -129,6 +140,7 @@ export function PyqForm() {
     return next;
   });
   const qCount = (sid) => data.links.filter((x) => x.set_id === sid).length;
+  const sameCourse = data.papers.filter((x) => x.exam_name.trim() === form.exam_name.trim() && form.course.trim() && normText(x.course) === normText(form.course)).sort((a, b) => b.year - a.year);
 
   const save = async () => {
     if (busyRef.current) return;
@@ -165,6 +177,7 @@ export function PyqForm() {
         <Link className="btn btn-ghost" to="/admin/pyq">Back</Link>
         <button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save paper'}</button>
       </AdminHead>
+      {copyFrom && <div className="notice">New year for <strong>{form.exam_name} {form.course}</strong>. Change the year if needed, then click <strong>Save paper</strong>.</div>}
       <div className="card form-card">
         <div className="form-row four">
           <Field label="Exam" required error={errors.exam_name} hint="JMI, AMU, CUET… or type a new one">
@@ -186,6 +199,18 @@ export function PyqForm() {
             <input className="input mono" value={form.slug} onChange={(e) => { setSlugTouched(true); setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() })); }} /></Field>
         </div>
         <Field label="Description"><textarea className="input" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
+        {id && (
+          <section className="pyq-upload">
+            <h2>Years of this course</h2>
+            <p className="small muted">Each year is its own paper with its own questions and file. All years of {form.exam_name} {form.course} show together for students.</p>
+            <div className="pyq-years">
+              {sameCourse.map((x) => x.id === id
+                ? <span key={x.id} className="chip active">{x.year}</span>
+                : <Link key={x.id} className="chip" to={`/admin/pyq/${x.id}`}>{x.year}{x.status !== 'published' ? ` (${x.status})` : ''}</Link>)}
+              <Link className="btn btn-primary btn-sm" to={`/admin/pyq/new?copy=${id}`}><Plus size={15} /> Add another year</Link>
+            </div>
+          </section>
+        )}
         <section className="pyq-upload">
           <h2>Questions</h2>
           {id ? (
