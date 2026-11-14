@@ -273,6 +273,27 @@ await as('authenticated', S1);
 await tryq(`update public.pyq_papers set title='hacked'`);
 await as('authenticated', ADMIN);
 ok('pyq: student cannot edit papers', (await q(`select count(*)::int n from public.pyq_papers where title='hacked'`))[0].n === 0);
+// ---- 008 course catalog (category > course > subjects, automatic course bank, Computer & Programming removed)
+await as('postgres');
+const pyBefore = (await q(`select status from subjects where slug='python'`))[0]?.status;
+await db.exec(mig('migrations/008_course_catalog.sql'));
+await db.exec(mig('migrations/008_course_catalog.sql')); // safe to run twice
+ok('008: computer-programming category removed', (await q(`select count(*)::int n from categories where slug='computer-programming'`))[0].n === 0);
+ok('008: subjects only in that category are archived', pyBefore === 'published' && (await q(`select status from subjects where slug='python'`))[0].status === 'archived');
+ok('008: subjects also in another category stay published', (await q(`select status from subjects where slug='computer-fundamentals'`))[0].status === 'published');
+await as('authenticated', ADMIN);
+const JMI = (await q(`select id from categories where slug='graduation-postgraduate'`))[0].id;
+const BAP = (await q(`insert into courses (slug,name,status,category_id) values ('ba-pol','BA Political Science','published',$1) returning id`, [JMI]))[0].id;
+const hinCount = (await q('select count(*)::int n from questions where subject_id=$1', [HIN]))[0].n;
+ok('008: admin adds subjects to a course', !(await tryq('insert into course_subjects (course_id, subject_id, position) values ($1,$2,0)', [BAP, HIN])).error);
+ok('008: existing subject questions auto-linked to course bank', hinCount > 0 && (await q('select count(*)::int n from course_questions where course_id=$1', [BAP]))[0].n === hinCount, `${hinCount}`);
+await makeQs(HIN, 'Hindi later', 2);
+ok('008: new subject questions auto-linked too', (await q('select count(*)::int n from course_questions where course_id=$1', [BAP]))[0].n === hinCount + 2);
+await as('anon');
+ok('008: guests read subjects of published courses', (await q('select count(*)::int n from course_subjects'))[0].n === 1);
+ok('008: guest cannot add course subjects', !!(await tryq('insert into course_subjects (course_id, subject_id) values ($1,$2)', [BAP, ENG])).error);
+await as('authenticated', S1);
+ok('008: student cannot add course subjects', !!(await tryq('insert into course_subjects (course_id, subject_id) values ($1,$2)', [BAP, ENG])).error);
 await as('postgres');
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
