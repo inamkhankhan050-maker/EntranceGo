@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight, Clock, ListChecks, TrainFront, ClipboardList } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clock, ListChecks, TrainFront, ClipboardList, GraduationCap } from 'lucide-react';
 import { SUBJECT_ICONS, tint } from './Icon.jsx';
 import { BookOpen } from 'lucide-react';
 
@@ -26,6 +26,22 @@ export function SubjectCard({ s, compact, tone, simple }) {
         <span className="subject-card-title">{s.name}</span>
         {!compact && s.description && <span className="subject-card-sub">{s.description}</span>}
         {!simple && <Count n={s.question_count} />}
+      </span>
+      {simple ? <ArrowRight className="arrow" size={20} aria-hidden="true" /> : <span className="chev" aria-hidden="true"><ChevronRight size={18} /></span>}
+    </Link>
+  );
+}
+
+// A course inside a category (e.g. BA Political Science under JMI). Opens its subjects, mocks and PYQs.
+export function CourseCard({ k, tone, simple }) {
+  const sub = k.description || (k.subjects?.length ? k.subjects.map((s) => s.name).join(' · ') : '');
+  return (
+    <Link to={`/courses/${k.slug}`} className={'card subject-card' + (simple ? ' simple' : '')}>
+      <Tile Icon={GraduationCap} tone={tone ?? k.slug.length} k={k.slug} />
+      <span className="subject-card-body">
+        <span className="subject-card-title">{k.name}</span>
+        {sub && <span className="subject-card-sub">{sub}</span>}
+        {!simple && <Count n={k.question_count} />}
       </span>
       {simple ? <ArrowRight className="arrow" size={20} aria-hidden="true" /> : <span className="chev" aria-hidden="true"><ChevronRight size={18} /></span>}
     </Link>

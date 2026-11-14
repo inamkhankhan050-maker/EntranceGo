@@ -11,7 +11,6 @@ import { IS_DEMO } from '../lib/config.js';
 // Menu groups mapped to catalog categories.
 const GROUPS = [
   ['competitive-exams', 'University Entrance Exams MCQs'],
-  ['computer-programming', 'Computer MCQs'],
   ['engineering-gate', 'CUET ENTRANCE EXAM MCQs'],
   ['graduation-postgraduate', 'JMI ENTRANCE EXAM MCQs'],
   ['interview-preparation', 'AMU ENTRANCE EXAM MCQs'],
@@ -52,6 +51,10 @@ export default function Drawer({ open, onClose }) {
     const c = cat.categories.find((k) => k.slug === slug);
     return c ? cat.subjects.filter((s) => s.category_ids.includes(c.id)) : [];
   };
+  const coursesOf = (slug) => {
+    const c = cat?.categories.find((k) => k.slug === slug);
+    return c ? cat.courses.filter((k) => k.category_id === c.id) : [];
+  };
 
   // Render into <body>: the sticky header's backdrop-filter would otherwise trap position: fixed.
   return createPortal(
@@ -86,10 +89,12 @@ export default function Drawer({ open, onClose }) {
           <NavLink to="/" end className="dr-row dr-main">Home</NavLink>
           {GROUPS.map(([slug, label]) => {
             const list = subjectsOf(slug);
-            if (cat && !list.length) return null;
+            const courses = coursesOf(slug);
+            if (cat && !list.length && !courses.length) return null;
             return (
               <Group key={slug} id={slug} label={label} open={expanded === slug} onToggle={() => toggle(slug)}>
                 {!cat && <span className="dr-link muted">Loading…</span>}
+                {courses.map((k) => <NavLink key={k.id} to={`/courses/${k.slug}`} className="dr-link">{k.name}</NavLink>)}
                 {list.map((s) => <NavLink key={s.id} to={`/subjects/${s.slug}`} className="dr-link">{s.name}</NavLink>)}
                 {cat && <Link to={`/subjects#${slug}`} className="dr-link dr-all">View all →</Link>}
               </Group>
