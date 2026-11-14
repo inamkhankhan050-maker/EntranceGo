@@ -351,7 +351,7 @@ select.input { padding-right: 2rem; }
 .admin-content { padding: 18px 14px 48px; max-width: 1200px; margin: 0 auto; }
 @media (min-width: 1024px) {
   .admin { flex-direction: row; }
-  .admin-side { width: 240px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; padding: 20px 14px; }
+  .admin-side { width: 240px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; padding: 20px 14px; overflow-y: auto; overscroll-behavior: contain; }
   .admin-side nav { flex-direction: column; flex-wrap: nowrap; margin-top: 10px; }
   .admin-side nav a { padding: .55rem .75rem; font-size: .92rem; }
   .admin-side-foot { margin-top: auto; flex-direction: column; gap: .6rem; }
@@ -709,3 +709,7 @@ html[data-theme="dark"] .report { background: #fff; color: #0f172a; }
 .pyq-upload label.btn { cursor: pointer; }
 .pyq-upload label.btn.disabled { opacity: .6; pointer-events: none; }
 .pyq-photo { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line, #e5e7eb); margin: 1rem 0; }
+
+/* Course form subject checklist scrolls inside the modal */
+.check-grid.scroll, .modal .check-grid { max-height: 260px; overflow-y: auto; padding-right: 4px; }
+.pyq-years { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }

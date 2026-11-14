@@ -16,6 +16,7 @@ import Progress from './pages/Progress.jsx';
 import { StaticPage, NotFound } from './pages/Static.jsx';
 import { MocksList, MockDetail } from './pages/Mocks.jsx';
 import { PyqList, PyqDetail } from './pages/Pyq.jsx';
+import CoursePage from './pages/Course.jsx';
 
 const MockAttempt = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockAttempt })));
 const MockResult = lazy(() => import('./pages/MockExam.jsx').then((m) => ({ default: m.MockResult })));
@@ -66,6 +67,7 @@ export default function App() {
               <Route path="progress" element={<Progress />} />
               <Route path="mock-tests" element={<MocksList />} />
               <Route path="mock-tests/:slug" element={<MockDetail />} />
+              <Route path="courses/:slug" element={<CoursePage />} />
               <Route path="pyq" element={<PyqList />} />
               <Route path="pyq/:slug" element={<PyqDetail />} />
               <Route path="mock/attempt/:id" element={<MockAttempt />} />
