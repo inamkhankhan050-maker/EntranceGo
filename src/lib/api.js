@@ -26,9 +26,13 @@ export const CATEGORY_LABELS = {
   'interview-preparation': 'AMU ENTRANCE EXAM',
 };
 
+// Categories removed from the site everywhere (also deleted in migration 008).
+export const HIDDEN_CATEGORIES = ['computer-programming'];
+const noCourses = { courses: [], course_subjects: [] };
+
 export function getCatalog() {
   if (!catalogPromise) {
-    catalogPromise = backend.loadCatalog().then((c) => {
+    catalogPromise = Promise.all([backend.loadCatalog(), backend.courseCatalog().catch(() => noCourses)]).then(([c, cc]) => {
       const sStat = Object.fromEntries(c.subject_stats.map((x) => [x.subject_id, x]));
       const tStat = Object.fromEntries(c.topic_stats.map((x) => [x.topic_id, x]));
       const eStat = Object.fromEntries(c.exam_stats.map((x) => [x.exam_id, x]));
@@ -46,10 +50,30 @@ export function getCatalog() {
         const links = c.set_questions.filter((x) => x.set_id === p.id).sort((a, b) => a.position - b.position);
         return { ...p, question_ids: links.map((x) => x.question_id), question_count: links.length, subject: subjectById[p.subject_id], exam: examById[p.exam_id] };
       });
-      return { categories: c.categories.map((k) => (CATEGORY_LABELS[k.slug] ? { ...k, name: CATEGORY_LABELS[k.slug] } : k)), subjects, topics, exams, sets, subjectById, examById };
+      const courses = (cc?.courses || []).map((k) => {
+        const ids = (cc.course_subjects || []).filter((x) => x.course_id === k.id).sort((a, b) => a.position - b.position).map((x) => x.subject_id);
+        const subs = ids.map((id) => subjectById[id]).filter(Boolean);
+        return { ...k, subject_ids: ids, subjects: subs, question_count: subs.reduce((n, s) => n + s.question_count, 0) };
+      });
+      const categories = c.categories.filter((k) => !HIDDEN_CATEGORIES.includes(k.slug)).map((k) => (CATEGORY_LABELS[k.slug] ? { ...k, name: CATEGORY_LABELS[k.slug] } : k));
+      return { categories, subjects, topics, exams, sets, subjectById, examById, courses };
     }).catch((e) => { catalogPromise = null; throw e; });
   }
   return catalogPromise;
+}
+
+// Public course page: its subjects, its mock tests and PYQ papers filed under the same course name.
+export async function getCoursePage(slug) {
+  const c = await getCatalog();
+  const course = c.courses.find((k) => k.slug === slug);
+  if (!course) return null;
+  const papers = await backend.pyqPapers().catch(() => []);
+  const name = normText(course.name);
+  return {
+    course,
+    category: c.categories.find((k) => k.id === course.category_id) || null,
+    pyqs: papers.filter((p) => normText(p.course) === name || p.course_id === course.id),
+  };
 }
 
 export async function getSubjectPage(slug) {
@@ -149,7 +173,12 @@ export async function getPyqs() {
   return papers.map((p) => ({ ...p, set: p.set_id ? setById[p.set_id] || null : null }));
 }
 export async function getPyqPage(slug) {
-  return (await getPyqs()).find((p) => p.slug === slug) || null;
+  const all = await getPyqs();
+  const p = all.find((x) => x.slug === slug);
+  if (!p) return null;
+  // Other years of the same exam + course, newest first.
+  const years = all.filter((x) => x.id !== p.id && x.exam_name === p.exam_name && normText(x.course) === normText(p.course)).sort((a, b) => b.year - a.year);
+  return { ...p, years };
 }
 
 // ---------------- admin ----------------

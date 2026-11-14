@@ -33,7 +33,7 @@ export function useMeta(title, description, { noindex = false } = {}) {
   useEffect(() => {
     const full = title ? `${title} | EntranceGo` : 'EntranceGo — Learn Smarter. Practice Better.';
     document.title = full;
-    const desc = description || 'Practise MCQs for competitive exams, programming, engineering and university subjects with answers and explanations.';
+    const desc = description || 'Practise MCQs for competitive exams, engineering and university subjects with answers and explanations.';
     setMeta('name', 'description', desc);
     setMeta('property', 'og:title', full);
     setMeta('property', 'og:description', desc);

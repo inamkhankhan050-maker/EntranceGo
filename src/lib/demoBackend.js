@@ -161,7 +161,7 @@ export const demo = {
     save(); return delay(true);
   },
   async replaceLinks(table, key, value, rows) {
-    const d = load(); d[table] = d[table].filter((x) => x[key] !== value).concat(rows); save(); return delay(true);
+    const d = load(); d[table] = (d[table] || []).filter((x) => x[key] !== value).concat(rows); save(); return delay(true);
   },
   async adminQueryQuestions({ search, subject_id, topic_id, exam_id, difficulty, status, page = 1, pageSize = 20 }) {
     let qs = load().questions.slice();
@@ -178,6 +178,7 @@ export const demo = {
   // Mock tests need the shared database (secure attempts, per-student history); demo mode only lists nothing.
   async mockCatalog() { return { courses: [], mocks: [], sections: [], subjects: [] }; },
   async coursePoolCounts() { return []; },
+  async courseCatalog() { return { courses: [], course_subjects: [] }; },
   async trackVisit() {},
   async visitStats() { throw new Error('Visitor statistics need the online database.'); },
   ...Object.fromEntries(['startMock', 'getMockAttempt', 'saveMockAnswer', 'submitMock', 'myMockAttempts', 'myMockAnswers', 'topicsByIds', 'adminMockAttempts', 'adminCourseLinks', 'adminLinkQuestions', 'adminUnlinkQuestions']

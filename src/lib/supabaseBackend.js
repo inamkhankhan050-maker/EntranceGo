@@ -180,6 +180,16 @@ export const supa = {
   },
 
   // ---------- PYQ papers (RLS: published only for students) ----------
+  // Published courses with their category and subjects (migration 008). Empty until the migration is run.
+  async courseCatalog() {
+    const c = sb();
+    const [courses, links] = await Promise.all([
+      c.from('courses').select('*').eq('status', 'published').order('sort_order').order('name'),
+      c.from('course_subjects').select('*').order('position'),
+    ]);
+    if (courses.error) throw friendly(courses.error);
+    return { courses: courses.data, course_subjects: links.error ? [] : links.data };
+  },
   async pyqPapers() {
     const { data, error } = await sb().from('pyq_papers').select('*').eq('status', 'published').order('year', { ascending: false }).order('sort_order');
     if (error) { if (/pyq_papers|does not exist|schema cache/i.test(error.message || '')) return []; throw friendly(error); }
