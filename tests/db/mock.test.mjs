@@ -295,5 +295,10 @@ ok('008: guest cannot add course subjects', !!(await tryq('insert into course_su
 await as('authenticated', S1);
 ok('008: student cannot add course subjects', !!(await tryq('insert into course_subjects (course_id, subject_id) values ($1,$2)', [BAP, ENG])).error);
 await as('postgres');
+// ---- 009 BHU category
+await db.exec(mig('migrations/009_bhu_category.sql'));
+await db.exec(mig('migrations/009_bhu_category.sql')); // safe to run twice
+ok('009: BHU category added once', (await q(`select count(*)::int n from categories where slug='bhu-entrance-exam'`))[0].n === 1);
+ok('009: AMU name stored', (await q(`select name from categories where slug='interview-preparation'`))[0].name === 'AMU ENTRANCE EXAM');
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
