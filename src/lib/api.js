@@ -24,6 +24,7 @@ export const CATEGORY_LABELS = {
   'engineering-gate': 'CUET ENTRANCE EXAM',
   'graduation-postgraduate': 'JMI ENTRANCE EXAM',
   'interview-preparation': 'AMU ENTRANCE EXAM',
+  'bhu-entrance-exam': 'BHU ENTRANCE EXAM',
 };
 
 // Categories removed from the site everywhere (also deleted in migration 008).
