@@ -11,7 +11,8 @@ const SECTIONS = {
   'competitive-exams': ['Practice MCQs by Subject', 'Core sections of government and private recruitment tests, each with answers and explanations.'],
   'engineering-gate': ['CUET ENTRANCE EXAM MCQs', 'Practice Smart with Subject-wise MCQs for CUET UG & PG Entrance Exams.'],
   'graduation-postgraduate': ['JMI ENTRANCE EXAM MCQs', 'Practice Smart for Class 6, 9, 11, Diploma, UG & PG Entrance Exams at Jamia Millia Islamia.'],
-  'interview-preparation': ['BHU ENTRANCE EXAM MCQs', 'Practice Smart for UG & PG Entrance Exams at Banaras Hindu University.'],
+  'interview-preparation': ['AMU ENTRANCE EXAM MCQs', 'Practice Smart for Class 6, 9, 11, Diploma, UG & PG Entrance Exams at Aligarh Muslim University.'],
+  'bhu-entrance-exam': ['BHU ENTRANCE EXAM MCQs', 'Practice Smart for UG & PG Entrance Exams at Banaras Hindu University.'],
 };
 
 function SectionHead({ id, title, sub }) {
@@ -26,8 +27,7 @@ function SectionHead({ id, title, sub }) {
 export default function Home() {
   useMeta(null, 'EntranceGo: practise MCQs for SSC, Railway and other competitive exams, engineering and university subjects, with answers and explanations.');
   const { data: c, loading, error, reload } = useAsync(getCatalog, []);
-  const cats = c ? c.categories.filter((cat) => cat.slug !== 'interview-preparation') : [];
-  const interview = c?.categories.find((cat) => cat.slug === 'interview-preparation');
+  const cats = c ? c.categories : [];
   const sets = c ? c.sets.filter((p) => p.question_count && !p.slug.startsWith('pyq-')).slice(0, 6) : [];
 
   const catSection = (cat) => {
@@ -75,14 +75,14 @@ export default function Home() {
         <>
           {cats.map(catSection)}
 
-          <section className="section sv-section" aria-labelledby="h-exams">
-            <div className="container">
-              <SectionHead id="h-exams" title="AMU ENTRANCE EXAM MCQs" sub="Practice Smart for Class 6, 9, 11, Diploma, UG & PG Entrance Exams at Aligarh Muslim University." />
-              <div className="sv-grid">{c.exams.map((e, i) => <ExamCard key={e.id} e={e} tone={i} simple />)}</div>
-            </div>
-          </section>
-
-          {interview && catSection(interview)}
+          {c.exams.length > 0 && (
+            <section className="section sv-section" aria-labelledby="h-exams">
+              <div className="container">
+                <SectionHead id="h-exams" title="Exam-wise MCQs" sub="Practise questions tagged by exam." />
+                <div className="sv-grid">{c.exams.map((e, i) => <ExamCard key={e.id} e={e} tone={i} simple />)}</div>
+              </div>
+            </section>
+          )}
 
           {sets.length > 0 && (
             <section className="section sv-section sv-tint" aria-labelledby="h-sets">
