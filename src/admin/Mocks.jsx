@@ -81,6 +81,28 @@ function CourseForm({ course, courses, lookups, has008, onClose, onSaved }) {
   const [f, setF] = useState(course);
   const [touched, setTouched] = useState(!!course.id);
   const [busy, setBusy] = useState(false);
+  const [subs, setSubs] = useState(lookups.subjects);
+  const [newSub, setNewSub] = useState('');
+  const [adding, setAdding] = useState(false);
+  const addSubject = async () => {
+    const nm = newSub.trim();
+    if (!nm) return;
+    const found = subs.find((s) => s.name.trim().toLowerCase() === nm.toLowerCase());
+    if (found) { if (!f.subject_ids.includes(found.id)) setF({ ...f, subject_ids: [...f.subject_ids, found.id] }); setNewSub(''); toast(`“${found.name}” already exists, ticked it.`); return; }
+    let slug = slugify(nm) || 'subject';
+    if (subs.some((s) => s.slug === slug)) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+    setAdding(true);
+    try {
+      const saved = await admin.insert('subjects', { name: nm, slug, icon: 'BookOpen', status: 'published', sort_order: subs.length });
+      const row = Array.isArray(saved) ? saved[0] : saved;
+      if (f.category_id) await admin.replaceLinks('subject_categories', 'subject_id', row.id, [{ subject_id: row.id, category_id: f.category_id }]);
+      setSubs([...subs, row]);
+      setF((x) => ({ ...x, subject_ids: [...x.subject_ids, row.id] }));
+      setNewSub('');
+      toast(`Subject “${nm}” created and added.`);
+    } catch (e) { toast(e.message, 'error'); }
+    setAdding(false);
+  };
   const err = !f.name.trim() ? 'Name is required.' : !isSlug(f.slug) ? 'Slug: lowercase letters, numbers and hyphens.' : courses.some((c) => c.slug === f.slug && c.id !== f.id) ? 'Slug already used.' : null;
   const save = async () => {
     if (err) { toast(err, 'error'); return; }
@@ -101,9 +123,13 @@ function CourseForm({ course, courses, lookups, has008, onClose, onSaved }) {
         <Field label="Category" hint="The home page shows this course inside this category."><select className="input" value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
           <option value="">None</option>{lookups.categories.filter((k) => k.slug !== 'computer-programming').map((k) => <option key={k.id} value={k.id}>{CATEGORY_LABELS[k.slug] || k.name}</option>)}</select></Field>
         <Field label="Subjects in this course" hint="All questions of the ticked subjects are added to this course's question bank, now and in future.">
-          <div className="check-grid">{lookups.subjects.filter((s) => s.status !== 'archived').map((s) => (
+          <div className="check-grid">{subs.filter((s) => s.status !== 'archived').map((s) => (
             <label key={s.id} className="check small"><input type="checkbox" checked={f.subject_ids.includes(s.id)} onChange={(e) => setF({ ...f, subject_ids: e.target.checked ? [...f.subject_ids, s.id] : f.subject_ids.filter((x) => x !== s.id) })} /> <span>{s.name}</span></label>
           ))}</div>
+          <div className="filters" style={{ marginTop: 8 }}>
+            <input className="input" placeholder="New subject name, e.g. Political Science" value={newSub} onChange={(e) => setNewSub(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubject(); } }} aria-label="New subject name" />
+            <button type="button" className="btn btn-outline" onClick={addSubject} disabled={adding || !newSub.trim()}><Plus size={16} /> {adding ? 'Adding…' : 'Add new subject'}</button>
+          </div>
         </Field>
       </>)}
       <Field label="Description"><textarea className="input" rows={2} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
