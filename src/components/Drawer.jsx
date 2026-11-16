@@ -14,6 +14,7 @@ const GROUPS = [
   ['engineering-gate', 'CUET ENTRANCE EXAM MCQs'],
   ['graduation-postgraduate', 'JMI ENTRANCE EXAM MCQs'],
   ['interview-preparation', 'AMU ENTRANCE EXAM MCQs'],
+  ['bhu-entrance-exam', 'BHU ENTRANCE EXAM MCQs'],
 ];
 
 function Group({ id, label, open, onToggle, children }) {
