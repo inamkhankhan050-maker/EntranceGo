@@ -67,27 +67,45 @@ export function PyqList() {
         <Empty title={f.exam ? `No ${f.exam}${f.level ? ` ${f.level}` : ''} papers yet` : 'No papers match'} action={<button className="btn btn-outline" onClick={() => setParams({}, { replace: true })}>Clear filters</button>}>Try another year or course.</Empty>
       ) : (
         <>
-          <p className="muted small">{plural(list.length, 'paper')}</p>
-          <div className="mock-grid">{list.map((p) => <PyqCard key={p.id} p={p} />)}</div>
+          <p className="muted small">{plural(groupByCourse(list).length, 'course')} · {plural(list.length, 'paper')}</p>
+          <div className="mock-grid">{groupByCourse(list).map((g) => <PyqCourseCard key={g.key} g={g} />)}</div>
         </>
       )}
     </div>
   );
 }
 
-function PyqCard({ p }) {
+// One card per exam + course, holding every year of that course (newest first).
+export function groupByCourse(papers) {
+  const groups = new Map();
+  for (const p of papers) {
+    const key = `${p.exam_name}|${normText(p.course)}`;
+    if (!groups.has(key)) groups.set(key, { key, exam_name: p.exam_name, level: p.level, course: String(p.course).trim(), papers: [] });
+    groups.get(key).papers.push(p);
+  }
+  return [...groups.values()].map((g) => ({ ...g, papers: g.papers.sort((a, b) => b.year - a.year || String(a.title).localeCompare(String(b.title))) }));
+}
+
+function PyqCourseCard({ g }) {
+  const latest = g.papers[0];
+  const questions = g.papers.reduce((n, p) => n + (p.set?.question_count || 0), 0);
   return (
-    <Link to={`/pyq/${p.slug}`} className="card mock-card">
-      <span className="eyebrow">{p.exam_name} · {p.level}</span>
-      <strong className="mock-title">{p.title}</strong>
+    <div className="card mock-card">
+      <span className="eyebrow">{g.exam_name} · {g.level}</span>
+      <Link to={`/pyq/${latest.slug}`} className="mock-title"><strong>{g.course} PYQ</strong></Link>
       <div className="mock-facts small">
-        <span><GraduationCap size={15} /> {p.course}</span>
-        <span><CalendarDays size={15} /> {p.year}</span>
-        {p.set?.question_count > 0 && <span><ListChecks size={15} /> {plural(p.set.question_count, 'question')}</span>}
-        {p.pdf_url && <span><FileText size={15} /> PDF</span>}
+        <span><GraduationCap size={15} /> {plural(g.papers.length, 'paper')}</span>
+        {questions > 0 && <span><ListChecks size={15} /> {plural(questions, 'question')}</span>}
       </div>
-      <span className="set-meta"><span className="muted small">Open paper</span><ArrowRight size={15} className="set-go" aria-hidden="true" /></span>
-    </Link>
+      <div className="pyq-years">
+        {g.papers.map((p) => (
+          <Link key={p.id} className="chip" to={`/pyq/${p.slug}`} title={p.title}>
+            <CalendarDays size={14} /> {p.year}{p.pdf_url && <FileText size={13} aria-label="PDF" />}
+          </Link>
+        ))}
+      </div>
+      <span className="set-meta"><span className="muted small">Choose a year</span><ArrowRight size={15} className="set-go" aria-hidden="true" /></span>
+    </div>
   );
 }
 
