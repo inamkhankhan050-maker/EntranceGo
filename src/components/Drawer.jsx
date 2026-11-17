@@ -50,7 +50,8 @@ export default function Drawer({ open, onClose }) {
   const subjectsOf = (slug) => {
     if (!cat) return [];
     const c = cat.categories.find((k) => k.slug === slug);
-    return c ? cat.subjects.filter((s) => s.category_ids.includes(c.id)) : [];
+    if (!c || slug !== 'competitive-exams') return []; // exam categories list courses only
+    return cat.subjects.filter((s) => s.category_ids.includes(c.id));
   };
   const coursesOf = (slug) => {
     const c = cat?.categories.find((k) => k.slug === slug);
