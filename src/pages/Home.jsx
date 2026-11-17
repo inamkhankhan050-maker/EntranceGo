@@ -6,6 +6,8 @@ import { SearchBox } from '../components/Layout.jsx';
 import { SubjectCard, ExamCard, SetCard, CourseCard } from '../components/Cards.jsx';
 import { Loading, ErrorState } from '../components/States.jsx';
 
+const GENERAL = 'competitive-exams';
+
 // Homepage headings and copy per category.
 const SECTIONS = {
   'competitive-exams': ['Practice MCQs by Subject', 'Core sections of government and private recruitment tests, each with answers and explanations.'],
@@ -34,7 +36,8 @@ export default function Home() {
     // Courses of this category come first; subjects already inside one of them are not repeated.
     const courses = c.courses.filter((k) => k.category_id === cat.id);
     const inCourse = new Set(courses.flatMap((k) => k.subject_ids));
-    const list = c.subjects.filter((s) => s.category_ids.includes(cat.id) && !inCourse.has(s.id));
+    // Exam categories (JMI, AMU, …) list courses only; loose subjects show only in the general category.
+    const list = cat.slug === GENERAL ? c.subjects.filter((s) => s.category_ids.includes(cat.id) && !inCourse.has(s.id)) : [];
     if (!list.length && !courses.length) return null;
     const [title, sub] = SECTIONS[cat.slug] || [cat.name, cat.description];
     return (
