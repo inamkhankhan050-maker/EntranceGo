@@ -12,10 +12,11 @@ import { SubjectIcon, ICON_NAMES } from '../components/Icon.jsx';
 
 function useCatalogAdmin() {
   return useAsync(async () => {
-    const [l, counts] = await Promise.all([admin.lookups(), admin.counts()]);
+    const [l, counts, courses, courseSubjects] = await Promise.all([admin.lookups(), admin.counts(),
+      admin.select('courses').catch(() => []), admin.select('course_subjects').catch(() => [])]);
     // Show the same category names as the public site (renamed by slug in api.js)
     const categories = (l.categories || []).map((k) => (CATEGORY_LABELS[k.slug] ? { ...k, name: CATEGORY_LABELS[k.slug] } : k));
-    return { ...l, categories, counts };
+    return { ...l, categories, counts, courses: courses || [], courseSubjects: courseSubjects || [] };
   }, []);
 }
 
@@ -58,15 +59,17 @@ export function SubjectsAdmin() {
 
   const list = useMemo(() => {
     if (!data) return [];
-    return data.subjects.map((s) => ({ ...s, cats: data.subject_categories.filter((x) => x.subject_id === s.id).map((x) => x.category_id) }))
+    return data.subjects.map((s) => ({ ...s, cats: data.subject_categories.filter((x) => x.subject_id === s.id).map((x) => x.category_id), crs: data.courseSubjects.filter((x) => x.subject_id === s.id).map((x) => x.course_id) }))
       .filter((s) => (!q || normText(s.name).includes(normText(q)) || s.slug.includes(normText(q))) && (!cat || s.cats.includes(cat)) && (!status || s.status === status));
   }, [data, q, cat, status]);
 
-  const open = (s) => { setErrors({}); setEdit(s ? { ...s, cats: data.subject_categories.filter((x) => x.subject_id === s.id).map((x) => x.category_id) } : { name: '', slug: '', description: '', icon: 'BookOpen', status: 'draft', sort_order: data.subjects.length, cats: [] }); };
+  const open = (s) => { setErrors({}); setEdit(s ? { ...s, cats: data.subject_categories.filter((x) => x.subject_id === s.id).map((x) => x.category_id), crs: data.courseSubjects.filter((x) => x.subject_id === s.id).map((x) => x.course_id) } : { name: '', slug: '', description: '', icon: 'BookOpen', status: 'published', sort_order: data.subjects.length, cats: [], crs: [] }); };
+  const catOf = (courseId) => { const k = data.courses.find((x) => x.id === courseId); return data.categories.find((c) => c.id === k?.category_id)?.name; };
+  const courseName = (id) => data.courses.find((x) => x.id === id)?.name;
   const save = async () => {
     if (busy) return;
     const e = validateSlugged(edit);
-    if (!edit.cats.length) e.cats = 'Choose at least one category.';
+    if (!edit.cats.length && !edit.crs.length) e.cats = 'Choose a course (or a category for a general subject).';
     if (data.subjects.some((s) => s.slug === edit.slug && s.id !== edit.id)) e.slug = 'Another subject already uses this slug.';
     setErrors(e); if (Object.keys(e).length) return;
     setBusy(true);
@@ -74,6 +77,10 @@ export function SubjectsAdmin() {
       const row = { name: edit.name.trim(), slug: edit.slug, description: edit.description?.trim() || null, icon: edit.icon, status: edit.status, sort_order: Number(edit.sort_order) || 0 };
       const saved = edit.id ? await admin.update('subjects', edit.id, row) : await admin.insert('subjects', row);
       await admin.replaceLinks('subject_categories', 'subject_id', saved.id, edit.cats.map((c) => ({ subject_id: saved.id, category_id: c })));
+      if (data.courses.length) {
+        const pos = (cid) => { const old = data.courseSubjects.find((x) => x.course_id === cid && x.subject_id === saved.id); return old ? old.position : data.courseSubjects.filter((x) => x.course_id === cid).length; };
+        await admin.replaceLinks('course_subjects', 'subject_id', saved.id, edit.crs.map((cid) => ({ course_id: cid, subject_id: saved.id, position: pos(cid) })));
+      }
       toast(edit.id ? 'Subject updated.' : 'Subject created.'); setEdit(null); reload();
     } catch (err) { toast(err.message, 'error'); }
     setBusy(false);
@@ -87,7 +94,7 @@ export function SubjectsAdmin() {
 
   return (
     <>
-      <AdminHead title="Subjects" sub="A subject can belong to several categories without being duplicated.">
+      <AdminHead title="Subjects" sub="Category > Course > Subject. Put each subject inside its course (e.g. Political Science inside BA Political Science). Only general subjects like Aptitude go straight into a category.">
         <button className="btn btn-primary" onClick={() => open(null)} disabled={!data}><Plus size={17} /> New subject</button>
       </AdminHead>
       <div className="filters">
@@ -98,13 +105,14 @@ export function SubjectsAdmin() {
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : list.length === 0 ? <Empty title="No subjects match" /> : (
         <div className="table-wrap">
           <table className="table">
-            <thead><tr><th>Subject</th><th>Categories</th><th>Topics</th><th>Questions</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
+            <thead><tr><th>Subject</th><th>Courses</th><th>Categories</th><th>Topics</th><th>Questions</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
             <tbody>
               {list.map((s) => {
                 const tq = data.counts.topicsBySubject[s.id] || 0, qq = data.counts.bySubject[s.id] || 0;
                 return (
                   <tr key={s.id}>
                     <td><div className="cell-with-icon"><SubjectIcon name={s.icon} k={s.slug} size={18} /><div><strong>{s.name}</strong><div className="muted small mono">/subjects/{s.slug}</div></div></div></td>
+                    <td className="small">{s.crs.length ? s.crs.map(courseName).filter(Boolean).join(', ') : <span className="muted">—</span>}</td>
                     <td className="small">{s.cats.map((c) => data.categories.find((k) => k.id === c)?.name).join(', ')}</td>
                     <td><Link to={`/admin/topics?subject=${s.id}`}>{tq}</Link></td>
                     <td><Link to={`/admin/questions?subject=${s.id}`}>{qq}</Link></td>
@@ -129,8 +137,19 @@ export function SubjectsAdmin() {
         <FormModal title={edit.id ? `Edit ${edit.name}` : 'New subject'} onClose={() => setEdit(null)} onSubmit={save} busy={busy}>
           <NameSlug form={edit} set={(p) => setEdit({ ...edit, ...p })} errors={errors} />
           <Field label="Description"><textarea className="input" rows={2} value={edit.description || ''} onChange={(e) => setEdit({ ...edit, description: e.target.value })} /></Field>
+          {data.courses.length > 0 && (
+            <fieldset className="field">
+              <legend>Course(s) this subject belongs to</legend>
+              <div className="check-grid">
+                {data.courses.filter((k) => k.status !== 'archived').map((k) => (
+                  <label key={k.id} className="check"><input type="checkbox" checked={edit.crs.includes(k.id)} onChange={(e) => setEdit({ ...edit, crs: e.target.checked ? [...edit.crs, k.id] : edit.crs.filter((x) => x !== k.id) })} /> {k.name}{catOf(k.id) ? <span className="muted small"> · {catOf(k.id)}</span> : null}</label>
+                ))}
+              </div>
+              <small className="muted">The subject shows inside the course on the site, and its questions go to the course's mock test bank.</small>
+            </fieldset>
+          )}
           <fieldset className="field">
-            <legend>Categories <em>*</em></legend>
+            <legend>Show directly in category <span className="muted small">(only for general subjects like Aptitude, English)</span></legend>
             <div className="check-grid">
               {data.categories.map((c) => (
                 <label key={c.id} className="check"><input type="checkbox" checked={edit.cats.includes(c.id)} onChange={(e) => setEdit({ ...edit, cats: e.target.checked ? [...edit.cats, c.id] : edit.cats.filter((x) => x !== c.id) })} /> {c.name}</label>
