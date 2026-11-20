@@ -713,3 +713,7 @@ html[data-theme="dark"] .report { background: #fff; color: #0f172a; }
 /* Course form subject checklist scrolls inside the modal */
 .check-grid.scroll, .modal .check-grid { max-height: 260px; overflow-y: auto; padding-right: 4px; }
 .pyq-years { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+/* Admin question form: bigger boxes */
+.question-box { min-height: 200px; font-size: 1rem; line-height: 1.5; resize: vertical; }
+.explanation-box { min-height: 130px; resize: vertical; }
+.opt-input .input { min-height: 48px; }
