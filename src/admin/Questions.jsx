@@ -110,6 +110,22 @@ export function QuestionsAdmin() {
 // =================================================================== FORM
 const BLANK = { question: '', subject_id: '', topic_id: '', exam_id: '', difficulty: 'medium', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: '', explanation: '', image_url: '', tags: '', source: '', status: 'draft' };
 
+// Subject / topic / exam / difficulty of the last question added, so the next one starts with them.
+const LAST_KEY = 'eg-admin-last-question-pick';
+function lastPick(L) {
+  try {
+    const p = JSON.parse(localStorage.getItem(LAST_KEY) || '{}');
+    const out = {};
+    if (p.subject_id && L.subjects.some((x) => x.id === p.subject_id)) {
+      out.subject_id = p.subject_id;
+      if (p.topic_id && L.topics.some((t) => t.id === p.topic_id && t.subject_id === p.subject_id)) out.topic_id = p.topic_id;
+    }
+    if (p.exam_id && L.exams.some((x) => x.id === p.exam_id)) out.exam_id = p.exam_id;
+    if (['easy', 'medium', 'hard'].includes(p.difficulty)) out.difficulty = p.difficulty;
+    return out;
+  } catch { return {}; }
+}
+
 export function QuestionForm() {
   const { id } = useParams();
   const [params] = useSearchParams();
@@ -134,7 +150,7 @@ export function QuestionForm() {
       const s = L.src;
       setForm({ ...BLANK, ...Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v ?? ''])), tags: (s.tags || []).join(', '),
         ...(from ? { status: 'draft', question: s.question + ' (copy)' } : {}) });
-    } else setForm({ ...BLANK });
+    } else setForm({ ...BLANK, ...lastPick(L) });
   }, [L, from]);
 
   if (loading || (!form && !error)) return <Loading />;
@@ -160,9 +176,19 @@ export function QuestionForm() {
     busyRef.current = true; setBusy(true);
     try {
       const saved = isNew ? await admin.insert('questions', payload(status)) : await admin.update('questions', id, payload(status));
-      toast(status === 'published' ? 'Question published. It is now live for students.' : 'Saved as draft.');
+      if (!isNew) toast(status === 'published' ? 'Question published. It is now live for students.' : 'Saved as draft.');
       setPreview(false);
-      if (isNew) nav(`/admin/questions/${saved.id}`, { replace: true }); else reload();
+      if (isNew) {
+        // Fresh box for the next question, keeping subject, topic, exam and difficulty.
+        const keep = { subject_id: form.subject_id, topic_id: form.topic_id, exam_id: form.exam_id, difficulty: form.difficulty };
+        try { localStorage.setItem(LAST_KEY, JSON.stringify(keep)); } catch { /* ignore */ }
+        setForm({ ...BLANK, ...keep }); setErrors({});
+        if (from) nav('/admin/questions/new', { replace: true });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => document.querySelector('.question-box')?.focus(), 50);
+        toast(status === 'published' ? 'Question published. Add the next one.' : 'Saved as draft. Add the next one.');
+        void saved;
+      } else reload();
     } catch (e) { toast(e.message, 'error'); }
     busyRef.current = false; setBusy(false);
   };
@@ -175,7 +201,7 @@ export function QuestionForm() {
       </AdminHead>
       <form className="card form-card" onSubmit={(e) => e.preventDefault()} noValidate>
         <Field label="Question" required error={errors.question}>
-          <textarea className="input" rows={3} value={form.question} onChange={(e) => set({ question: e.target.value })} />
+          <textarea className="input question-box" rows={8} value={form.question} onChange={(e) => set({ question: e.target.value })} />
         </Field>
         <div className="form-row">
           <Field label="Subject" required error={errors.subject_id}>
@@ -209,7 +235,7 @@ export function QuestionForm() {
         </fieldset>
 
         <Field label="Explanation" hint="Shown after answering in Practice mode, and in the review after a test.">
-          <textarea className="input" rows={3} value={form.explanation} onChange={(e) => set({ explanation: e.target.value })} />
+          <textarea className="input explanation-box" rows={5} value={form.explanation} onChange={(e) => set({ explanation: e.target.value })} />
         </Field>
         <div className="form-row">
           <Field label="Image URL (optional)" error={errors.image_url} hint="A public https:// link to a diagram or figure."><input className="input" type="url" value={form.image_url} onChange={(e) => set({ image_url: e.target.value })} /></Field>
